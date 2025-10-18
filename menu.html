@@ -45,7 +45,7 @@
             display: flex;
             flex-direction: column;
             border: 1px solid var(--border-color);
-            visibility: visible;
+            visibility: hidden;
         }
 
         .header {
@@ -97,12 +97,6 @@
             position: relative;
             height: 410px;
             overflow: hidden;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .menu-content::-webkit-scrollbar {
-            display: none;
         }
 
         .tab-content {
@@ -113,6 +107,12 @@
             width: 100%;
             height: 100%;
             overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-content::-webkit-scrollbar {
+            display: none;
         }
 
         .tab-content.active {
@@ -132,6 +132,7 @@
             background: var(--highlight-bg);
             z-index: 1;
             transition: top var(--transition-speed) ease-out;
+            pointer-events: none;
         }
 
         .menu-item {
@@ -143,11 +144,11 @@
             height: 41px;
             transition: background-color 0.2s ease;
             z-index: 2;
+            cursor: pointer;
         }
 
         .menu-item:hover {
-            background: rgba(138, 43, 226, 0.3) !important;
-            cursor: pointer;
+            background: rgba(138, 43, 226, 0.3);
         }
 
         .item-content {
@@ -157,8 +158,9 @@
             z-index: 2;
         }
         
-        .item-label { flex-grow: 1; }
-        .item-value { color: var(--primary-text); font-weight: 500; }
+        .item-label { 
+            flex-grow: 1; 
+        }
         
         .toggle-indicator { 
             font-weight: 600; 
@@ -209,30 +211,6 @@
             from { transform: translateX(0); opacity: 1; } 
             to { transform: translateX(100%); opacity: 0; } 
         }
-        
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            padding: 8px 15px;
-            background: rgba(0,0,0,0.3);
-            font-size: 14px;
-            font-weight: 500;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--secondary-text);
-        }
-        
-        .breadcrumb i {
-            margin-right: 8px;
-            cursor: pointer;
-        }
-        
-        .breadcrumb i:hover {
-            color: var(--accent-color);
-        }
-        
-        .breadcrumb span {
-            margin-left: 8px;
-        }
     </style>
 </head>
 <body>
@@ -241,11 +219,6 @@
 
 <div class="menu-container" id="menu-container">
     <div class="header">RISK</div>
-    
-    <div class="breadcrumb" id="breadcrumb">
-        <i class="fas fa-arrow-left" id="back-button"></i>
-        <span id="current-tab">Player</span>
-    </div>
     
     <div class="tabs-container" id="tabs-container">
         <!-- Tabs will be populated by JavaScript -->
@@ -256,7 +229,7 @@
     </div>
     
     <div class="footer" id="footer">
-        Player (1/8)
+        <!-- Footer content will be populated by JavaScript -->
     </div>
 </div>
 
@@ -266,161 +239,59 @@
         const tabsContainer = document.getElementById('tabs-container');
         const menuContent = document.getElementById('menu-content');
         const footer = document.getElementById('footer');
-        const breadcrumb = document.getElementById('breadcrumb');
-        const currentTabSpan = document.getElementById('current-tab');
-        const backButton = document.getElementById('back-button');
         const notificationContainer = document.getElementById('notification-container');
         
+        let currentState = null;
         let selectedTabIndex = 0;
         let selectedItemIndex = 0;
-        let currentSubmenu = null;
-        let highlightEl = null;
-        const ITEM_HEIGHT = 41;
         
-        // Menu structure based on your screenshot
-        const menuData = {
-            tabs: [
-                {
-                    id: 'player',
-                    title: 'Player',
-                    items: [
-                        { label: 'Online', type: 'submenu', target: 'online' },
-                        { label: 'Teleport', type: 'submenu', target: 'teleport' },
-                        { label: 'Emotes', type: 'submenu', target: 'emotes' },
-                        { label: 'Weapons', type: 'submenu', target: 'weapons' },
-                        { label: 'Vehicle', type: 'submenu', target: 'vehicle' },
-                        { label: 'Events', type: 'submenu', target: 'events' },
-                        { label: 'Settings', type: 'submenu', target: 'settings' },
-                        { label: 'VIP', type: 'submenu', target: 'vip' },
-                        { label: 'Beta - 1.0', type: 'submenu', target: 'beta' },
-                        { label: 'Risk.lua', type: 'action', action: 'risk_lua' }
-                    ]
-                },
-                {
-                    id: 'triggers',
-                    title: 'Triggers',
-                    items: [
-                        { label: 'Trigger 1', type: 'toggle', stateId: 'trigger1' },
-                        { label: 'Trigger 2', type: 'toggle', stateId: 'trigger2' },
-                        { label: 'Trigger 3', type: 'toggle', stateId: 'trigger3' },
-                        { label: 'Trigger 4', type: 'toggle', stateId: 'trigger4' },
-                        { label: 'Trigger 5', type: 'toggle', stateId: 'trigger5' }
-                    ]
-                },
-                {
-                    id: 'visuals',
-                    title: 'Visuals',
-                    items: [
-                        { label: 'ESP', type: 'toggle', stateId: 'esp' },
-                        { label: 'Crosshair', type: 'toggle', stateId: 'crosshair' },
-                        { label: 'Radar', type: 'toggle', stateId: 'radar' },
-                        { label: 'Night Vision', type: 'toggle', stateId: 'nightvision' }
-                    ]
-                },
-                {
-                    id: 'misc',
-                    title: 'Misc',
-                    items: [
-                        { label: 'Option 1', type: 'toggle', stateId: 'misc1' },
-                        { label: 'Option 2', type: 'toggle', stateId: 'misc2' },
-                        { label: 'Option 3', type: 'toggle', stateId: 'misc3' }
-                    ]
-                }
-            ],
-            submenus: {
-                'online': {
-                    title: 'Online',
-                    items: [
-                        { label: 'Player List', type: 'submenu', target: 'player_list' },
-                        { label: 'Server Info', type: 'action', action: 'server_info' },
-                        { label: 'Join Game', type: 'action', action: 'join_game' }
-                    ]
-                },
-                'teleport': {
-                    title: 'Teleport',
-                    items: [
-                        { label: 'Waypoints', type: 'submenu', target: 'waypoints' },
-                        { label: 'Custom Location', type: 'action', action: 'custom_location' },
-                        { label: 'Last Location', type: 'action', action: 'last_location' }
-                    ]
-                },
-                'emotes': {
-                    title: 'Emotes',
-                    items: [
-                        { label: 'Dance 1', type: 'action', action: 'dance1' },
-                        { label: 'Dance 2', type: 'action', action: 'dance2' },
-                        { label: 'Wave', type: 'action', action: 'wave' },
-                        { label: 'Sit', type: 'action', action: 'sit' }
-                    ]
-                },
-                'weapons': {
-                    title: 'Weapons',
-                    items: [
-                        { label: 'Give All Weapons', type: 'action', action: 'give_all' },
-                        { label: 'Unlimited Ammo', type: 'toggle', stateId: 'unlimited_ammo' },
-                        { label: 'No Recoil', type: 'toggle', stateId: 'no_recoil' }
-                    ]
-                },
-                'vehicle': {
-                    title: 'Vehicle',
-                    items: [
-                        { label: 'Spawn Vehicle', type: 'action', action: 'spawn_vehicle' },
-                        { label: 'Repair Vehicle', type: 'action', action: 'repair_vehicle' },
-                        { label: 'God Mode', type: 'toggle', stateId: 'vehicle_godmode' }
-                    ]
-                },
-                'events': {
-                    title: 'Events',
-                    items: [
-                        { label: 'Event 1', type: 'action', action: 'event1' },
-                        { label: 'Event 2', type: 'action', action: 'event2' }
-                    ]
-                },
-                'settings': {
-                    title: 'Settings',
-                    items: [
-                        { label: 'Graphics', type: 'submenu', target: 'graphics' },
-                        { label: 'Controls', type: 'submenu', target: 'controls' },
-                        { label: 'Audio', type: 'submenu', target: 'audio' }
-                    ]
-                },
-                'vip': {
-                    title: 'VIP',
-                    items: [
-                        { label: 'VIP Features', type: 'submenu', target: 'vip_features' },
-                        { label: 'VIP Status', type: 'action', action: 'vip_status' }
-                    ]
-                },
-                'beta': {
-                    title: 'Beta - 1.0',
-                    items: [
-                        { label: 'Experimental Feature 1', type: 'toggle', stateId: 'exp1' },
-                        { label: 'Experimental Feature 2', type: 'toggle', stateId: 'exp2' }
-                    ]
+        // Listen for messages from Lua
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            
+            if (data.action === "update" && data.data) {
+                currentState = data.data;
+                updateMenu(currentState);
+                menuContainer.style.visibility = 'visible';
+            }
+            else if (data.action === "show") {
+                menuContainer.style.visibility = 'visible';
+                if (data.data) {
+                    currentState = data.data;
+                    updateMenu(currentState);
                 }
             }
-        };
-        
-        // Option states
-        const optionStates = {};
-        
-        // Initialize the menu
-        function initMenu() {
-            createTabs();
-            createTabContents();
-            selectTab(0);
-            setupEventListeners();
+            else if (data.action === "hide") {
+                menuContainer.style.visibility = 'hidden';
+            }
+        });
+
+        function updateMenu(state) {
+            if (!state || !state.tabs) return;
+            
+            // Update tabs
+            updateTabs(state.tabs);
+            
+            // Update tab contents
+            updateTabContents(state.tabs);
+            
+            // Update footer
+            updateFooter(state);
+            
+            // Update selection
+            updateSelection(state);
         }
-        
-        // Create tabs
-        function createTabs() {
+
+        function updateTabs(tabs) {
             tabsContainer.innerHTML = '';
             
-            menuData.tabs.forEach((tab, index) => {
+            tabs.forEach((tab, index) => {
                 const tabEl = document.createElement('div');
                 tabEl.className = 'tab';
-                tabEl.textContent = tab.title;
-                tabEl.dataset.tabId = tab.id;
+                if (index === selectedTabIndex) {
+                    tabEl.classList.add('active');
+                }
+                tabEl.textContent = tab.title || `Tab ${index + 1}`;
                 tabEl.dataset.tabIndex = index;
                 
                 tabEl.addEventListener('click', () => {
@@ -430,258 +301,132 @@
                 tabsContainer.appendChild(tabEl);
             });
         }
-        
-        // Create tab contents
-        function createTabContents() {
+
+        function updateTabContents(tabs) {
             menuContent.innerHTML = '';
             
-            menuData.tabs.forEach((tab, index) => {
+            tabs.forEach((tab, index) => {
                 const tabContent = document.createElement('div');
                 tabContent.className = 'tab-content';
-                tabContent.id = `tab-${tab.id}`;
-                tabContent.dataset.tabIndex = index;
+                if (index === selectedTabIndex) {
+                    tabContent.classList.add('active');
+                }
+                tabContent.id = `tab-${index}`;
                 
                 const menuItems = document.createElement('ul');
                 menuItems.className = 'menu-items';
-                menuItems.id = `menu-items-${tab.id}`;
                 
                 const highlight = document.createElement('div');
                 highlight.className = 'selection-highlight';
-                highlight.id = `highlight-${tab.id}`;
+                highlight.id = `highlight-${index}`;
                 
                 menuItems.appendChild(highlight);
+                
+                // Add menu items
+                if (tab.items && Array.isArray(tab.items)) {
+                    tab.items.forEach((item, itemIndex) => {
+                        const menuItemEl = document.createElement('li');
+                        menuItemEl.className = 'menu-item';
+                        menuItemEl.dataset.itemIndex = itemIndex;
+                        
+                        let content = `<div class="item-content">`;
+                        content += `<span class="item-label">${escapeHtml(item.label || 'Unknown')}</span>`;
+                        
+                        if (item.type === 'toggle') {
+                            const isOn = item.state === 'ON';
+                            content += `<span class="toggle-indicator ${isOn ? 'on' : 'off'}">${isOn ? 'ON' : 'OFF'}</span>`;
+                        } else if (item.type === 'submenu') {
+                            content += `<i class="fas fa-chevron-right"></i>`;
+                        }
+                        
+                        content += `</div>`;
+                        menuItemEl.innerHTML = content;
+                        
+                        menuItemEl.addEventListener('click', () => {
+                            handleItemClick(index, itemIndex);
+                        });
+                        
+                        menuItems.appendChild(menuItemEl);
+                    });
+                }
+                
                 tabContent.appendChild(menuItems);
                 menuContent.appendChild(tabContent);
-                
-                populateTabContent(tab.id);
-            });
-        }
-        
-        // Populate tab content with items
-        function populateTabContent(tabId) {
-            const tab = menuData.tabs.find(t => t.id === tabId);
-            if (!tab) return;
-            
-            const menuItemsEl = document.getElementById(`menu-items-${tabId}`);
-            if (!menuItemsEl) return;
-            
-            // Clear existing items (except the highlight)
-            const highlight = document.getElementById(`highlight-${tabId}`);
-            menuItemsEl.innerHTML = '';
-            menuItemsEl.appendChild(highlight);
-            
-            // Add menu items
-            tab.items.forEach((item, index) => {
-                const menuItemEl = document.createElement('li');
-                menuItemEl.className = 'menu-item';
-                menuItemEl.dataset.itemIndex = index;
-                
-                let content = `<div class="item-content">`;
-                content += `<span class="item-label">${item.label}</span>`;
-                
-                if (item.type === 'submenu') {
-                    content += `<i class="fas fa-chevron-right"></i>`;
-                } else if (item.type === 'toggle') {
-                    const isOn = optionStates[item.stateId] || false;
-                    content += `<span class="toggle-indicator ${isOn ? 'on' : 'off'}">${isOn ? 'ON' : 'OFF'}</span>`;
-                }
-                
-                content += `</div>`;
-                menuItemEl.innerHTML = content;
-                
-                menuItemEl.addEventListener('click', () => {
-                    handleItemClick(tabId, index);
-                });
-                
-                menuItemsEl.appendChild(menuItemEl);
             });
             
-            // Update selection highlight for this tab
-            updateSelection(tabId, 0);
+            updateSelection(currentState);
         }
-        
-        // Select a tab
-        function selectTab(index) {
-            // Update tab selection
-            const tabs = tabsContainer.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            tabs[index].classList.add('active');
-            
-            // Update tab content
-            const tabContents = menuContent.querySelectorAll('.tab-content');
-            tabContents.forEach(content => content.classList.remove('active'));
-            tabContents[index].classList.add('active');
-            
-            selectedTabIndex = index;
-            selectedItemIndex = 0;
-            currentSubmenu = null;
-            
-            // Update breadcrumb
-            currentTabSpan.textContent = menuData.tabs[index].title;
-            backButton.style.visibility = 'hidden';
-            
-            // Update selection
-            updateSelection(menuData.tabs[index].id, 0);
-            
-            // Update footer
-            updateFooter();
-        }
-        
-        // Handle item click
-        function handleItemClick(tabId, itemIndex) {
-            const tab = menuData.tabs.find(t => t.id === tabId);
-            if (!tab || !tab.items[itemIndex]) return;
-            
-            const item = tab.items[itemIndex];
-            
-            if (item.type === 'submenu') {
-                openSubmenu(item.target);
-            } else if (item.type === 'toggle') {
-                toggleOption(item.stateId);
-                populateTabContent(tabId);
-                updateSelection(tabId, itemIndex);
-            } else if (item.type === 'action') {
-                executeAction(item.action);
-            }
-        }
-        
-        // Open a submenu
-        function openSubmenu(submenuId) {
-            const submenu = menuData.submenus[submenuId];
-            if (!submenu) return;
-            
-            currentSubmenu = submenu;
-            
-            // Update breadcrumb
-            currentTabSpan.textContent = submenu.title;
-            backButton.style.visibility = 'visible';
-            
-            // Populate the current tab with submenu items
-            const currentTabId = menuData.tabs[selectedTabIndex].id;
-            const menuItemsEl = document.getElementById(`menu-items-${currentTabId}`);
-            const highlight = document.getElementById(`highlight-${currentTabId}`);
-            
-            menuItemsEl.innerHTML = '';
-            menuItemsEl.appendChild(highlight);
-            
-            // Add submenu items
-            submenu.items.forEach((item, index) => {
-                const menuItemEl = document.createElement('li');
-                menuItemEl.className = 'menu-item';
-                menuItemEl.dataset.itemIndex = index;
-                
-                let content = `<div class="item-content">`;
-                content += `<span class="item-label">${item.label}</span>`;
-                
-                if (item.type === 'submenu') {
-                    content += `<i class="fas fa-chevron-right"></i>`;
-                } else if (item.type === 'toggle') {
-                    const isOn = optionStates[item.stateId] || false;
-                    content += `<span class="toggle-indicator ${isOn ? 'on' : 'off'}">${isOn ? 'ON' : 'OFF'}</span>`;
-                }
-                
-                content += `</div>`;
-                menuItemEl.innerHTML = content;
-                
-                menuItemEl.addEventListener('click', () => {
-                    handleSubmenuItemClick(submenuId, index);
-                });
-                
-                menuItemsEl.appendChild(menuItemEl);
-            });
-            
-            // Update selection
-            selectedItemIndex = 0;
-            updateSelection(currentTabId, 0);
-            
-            // Update footer
-            updateFooter();
-        }
-        
-        // Handle submenu item click
-        function handleSubmenuItemClick(submenuId, itemIndex) {
-            const submenu = menuData.submenus[submenuId];
-            if (!submenu || !submenu.items[itemIndex]) return;
-            
-            const item = submenu.items[itemIndex];
-            
-            if (item.type === 'submenu') {
-                openSubmenu(item.target);
-            } else if (item.type === 'toggle') {
-                toggleOption(item.stateId);
-                
-                // Re-render the submenu
-                openSubmenu(submenuId);
-                updateSelection(menuData.tabs[selectedTabIndex].id, itemIndex);
-            } else if (item.type === 'action') {
-                executeAction(item.action);
-            }
-        }
-        
-        // Go back to the main tab view
-        function goBack() {
-            if (currentSubmenu) {
-                // If we're in a submenu, go back to the tab
-                currentSubmenu = null;
-                currentTabSpan.textContent = menuData.tabs[selectedTabIndex].title;
-                backButton.style.visibility = 'hidden';
-                
-                // Repopulate the tab content
-                populateTabContent(menuData.tabs[selectedTabIndex].id);
-                updateSelection(menuData.tabs[selectedTabIndex].id, 0);
-            } else {
-                // If we're already at the tab level, cycle through tabs
-                selectTab((selectedTabIndex - 1 + menuData.tabs.length) % menuData.tabs.length);
+
+        function updateFooter(state) {
+            if (!state || !state.tabs || !state.tabs[selectedTabIndex]) {
+                footer.textContent = '';
+                return;
             }
             
-            updateFooter();
+            const currentTab = state.tabs[selectedTabIndex];
+            const itemCount = currentTab.items ? currentTab.items.length : 0;
+            footer.textContent = `${currentTab.title} - ${selectedItemIndex + 1}/${itemCount}`;
         }
-        
-        // Toggle an option
-        function toggleOption(stateId) {
-            optionStates[stateId] = !optionStates[stateId];
-            showNotification(`${stateId} ${optionStates[stateId] ? 'enabled' : 'disabled'}`);
-        }
-        
-        // Execute an action
-        function executeAction(action) {
-            showNotification(`Executing: ${action}`);
-            // In a real implementation, this would communicate with the Lua backend
-        }
-        
-        // Update selection highlight
-        function updateSelection(tabId, itemIndex) {
-            const menuItemsEl = document.getElementById(`menu-items-${tabId}`);
-            if (!menuItemsEl) return;
+
+        function updateSelection(state) {
+            if (!state || !state.tabs || !state.tabs[selectedTabIndex]) return;
             
-            const items = menuItemsEl.querySelectorAll('.menu-item');
-            const highlight = document.getElementById(`highlight-${tabId}`);
+            const tabContent = document.getElementById(`tab-${selectedTabIndex}`);
+            if (!tabContent) return;
             
-            if (!items[itemIndex] || !highlight) return;
+            const menuItems = tabContent.querySelectorAll('.menu-item');
+            const highlight = document.getElementById(`highlight-${selectedTabIndex}`);
+            
+            if (!menuItems[selectedItemIndex] || !highlight) return;
             
             // Update selected item styling
-            items.forEach((item, i) => {
-                item.classList.toggle('selected', i === itemIndex);
+            menuItems.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedItemIndex);
             });
             
             // Update highlight position
-            const itemTop = itemIndex * ITEM_HEIGHT;
+            const itemTop = selectedItemIndex * 41;
             highlight.style.top = `${itemTop}px`;
             
-            selectedItemIndex = itemIndex;
+            // Update footer
+            updateFooter(state);
         }
-        
-        // Update footer
-        function updateFooter() {
-            if (currentSubmenu) {
-                footer.textContent = `${currentSubmenu.title} - Item ${selectedItemIndex + 1}/${currentSubmenu.items.length}`;
-            } else {
-                const tab = menuData.tabs[selectedTabIndex];
-                footer.textContent = `${tab.title} - Item ${selectedItemIndex + 1}/${tab.items.length}`;
+
+        function selectTab(index) {
+            selectedTabIndex = index;
+            selectedItemIndex = 0;
+            
+            // Update UI
+            if (currentState) {
+                updateMenu(currentState);
             }
         }
-        
-        // Show notification
+
+        function handleItemClick(tabIndex, itemIndex) {
+            selectedTabIndex = tabIndex;
+            selectedItemIndex = itemIndex;
+            
+            // Send message back to Lua
+            if (window.parent) {
+                window.parent.postMessage({
+                    action: 'menu_action',
+                    tabIndex: tabIndex,
+                    itemIndex: itemIndex,
+                    isContentPanel: true
+                }, '*');
+            }
+            
+            // Update selection
+            updateSelection(currentState);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function showNotification(message) {
             const notification = document.createElement('div');
             notification.className = 'notification';
@@ -689,94 +434,96 @@
             notificationContainer.appendChild(notification);
             setTimeout(() => { notification.remove(); }, 3000);
         }
-        
-        // Set up event listeners
-        function setupEventListeners() {
-            // Back button
-            backButton.addEventListener('click', goBack);
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => {
-                switch(e.key) {
-                    case 'ArrowUp':
-                        e.preventDefault();
+
+        // Handle keyboard events from Lua
+        window.addEventListener('message', (event) => {
+            if (event.data.action === 'keypress') {
+                const key = event.data.key;
+                
+                switch(key) {
+                    case 'up':
                         navigateUp();
                         break;
-                    case 'ArrowDown':
-                        e.preventDefault();
+                    case 'down':
                         navigateDown();
                         break;
-                    case 'ArrowLeft':
-                        e.preventDefault();
+                    case 'left':
                         navigateLeft();
                         break;
-                    case 'ArrowRight':
-                        e.preventDefault();
+                    case 'right':
                         navigateRight();
                         break;
-                    case 'Enter':
-                        e.preventDefault();
-                        selectItem();
+                    case 'enter':
+                        selectCurrentItem();
                         break;
-                    case 'Backspace':
-                        e.preventDefault();
+                    case 'backspace':
                         goBack();
                         break;
                 }
-            });
-        }
-        
-        // Navigation functions
-        function navigateUp() {
-            let itemCount;
-            
-            if (currentSubmenu) {
-                itemCount = currentSubmenu.items.length;
-            } else {
-                itemCount = menuData.tabs[selectedTabIndex].items.length;
             }
+        });
+
+        function navigateUp() {
+            if (!currentState || !currentState.tabs || !currentState.tabs[selectedTabIndex]) return;
+            
+            const itemCount = currentState.tabs[selectedTabIndex].items ? currentState.tabs[selectedTabIndex].items.length : 0;
+            if (itemCount === 0) return;
             
             selectedItemIndex = (selectedItemIndex - 1 + itemCount) % itemCount;
-            updateSelection(menuData.tabs[selectedTabIndex].id, selectedItemIndex);
-            updateFooter();
+            updateSelection(currentState);
         }
-        
+
         function navigateDown() {
-            let itemCount;
+            if (!currentState || !currentState.tabs || !currentState.tabs[selectedTabIndex]) return;
             
-            if (currentSubmenu) {
-                itemCount = currentSubmenu.items.length;
-            } else {
-                itemCount = menuData.tabs[selectedTabIndex].items.length;
-            }
+            const itemCount = currentState.tabs[selectedTabIndex].items ? currentState.tabs[selectedTabIndex].items.length : 0;
+            if (itemCount === 0) return;
             
             selectedItemIndex = (selectedItemIndex + 1) % itemCount;
-            updateSelection(menuData.tabs[selectedTabIndex].id, selectedItemIndex);
-            updateFooter();
+            updateSelection(currentState);
         }
-        
+
         function navigateLeft() {
-            if (!currentSubmenu) {
-                selectTab((selectedTabIndex - 1 + menuData.tabs.length) % menuData.tabs.length);
-            }
+            if (!currentState || !currentState.tabs) return;
+            
+            selectedTabIndex = (selectedTabIndex - 1 + currentState.tabs.length) % currentState.tabs.length;
+            selectedItemIndex = 0;
+            updateMenu(currentState);
         }
-        
+
         function navigateRight() {
-            if (!currentSubmenu) {
-                selectTab((selectedTabIndex + 1) % menuData.tabs.length);
+            if (!currentState || !currentState.tabs) return;
+            
+            selectedTabIndex = (selectedTabIndex + 1) % currentState.tabs.length;
+            selectedItemIndex = 0;
+            updateMenu(currentState);
+        }
+
+        function selectCurrentItem() {
+            if (!currentState || !currentState.tabs || !currentState.tabs[selectedTabIndex]) return;
+            
+            const currentTab = currentState.tabs[selectedTabIndex];
+            if (!currentTab.items || !currentTab.items[selectedItemIndex]) return;
+            
+            // Send selection to Lua
+            if (window.parent) {
+                window.parent.postMessage({
+                    action: 'menu_action',
+                    tabIndex: selectedTabIndex,
+                    itemIndex: selectedItemIndex,
+                    isContentPanel: true
+                }, '*');
             }
         }
-        
-        function selectItem() {
-            if (currentSubmenu) {
-                handleSubmenuItemClick(currentSubmenu.id, selectedItemIndex);
-            } else {
-                handleItemClick(menuData.tabs[selectedTabIndex].id, selectedItemIndex);
-            }
+
+        function goBack() {
+            // This would handle back navigation if you implement submenus
+            // For now, just cycle through tabs
+            navigateLeft();
         }
-        
-        // Initialize the menu
-        initMenu();
+
+        // Initial setup
+        menuContainer.style.visibility = 'visible';
     });
 </script>
 
