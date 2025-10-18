@@ -3,1135 +3,782 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Macho Menu</title>
+    <title>RISK Menu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     
     <style>
         :root {
-            --bg-primary: rgba(15, 15, 20, 0.95);
-            --bg-secondary: rgba(25, 25, 35, 0.9);
-            --bg-accent: rgba(138, 43, 226, 0.3);
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-accent: #8A2BE2;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --font-main: 'Inter', sans-serif;
-            --border-radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --bg-color: rgba(10, 10, 10, 0.92);
+            --primary-text: #ffffff;
+            --secondary-text: #b0b0b0;
+            --accent-color: #8A2BE2;
+            --highlight-bg: #8A2BE2;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --font: 'Inter', sans-serif;
+            --border-radius: 8px;
+            --transition-speed: 0.1s;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: var(--font-main);
-            background: transparent;
-            color: var(--text-primary);
+            font-family: var(--font);
+            background-color: transparent;
+            color: var(--primary-text);
             overflow: hidden;
             user-select: none;
-            -webkit-user-select: none;
         }
+
+        .hidden { display: none !important; }
 
         .menu-container {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px;
-            height: 600px;
-            background: var(--bg-primary);
+            top: 15vh;
+            left: 5vw;
+            width: 420px;
+            background: var(--bg-color);
             border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(20px);
-            overflow: hidden;
+            border: 1px solid var(--border-color);
+            visibility: visible;
         }
 
-        /* Header */
         .header {
-            background: linear-gradient(135deg, var(--bg-accent), rgba(138, 43, 226, 0.1));
-            padding: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--text-accent);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .logo-text {
             font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(135deg, #8A2BE2, #FF6B6B);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            text-align: center;
+            color: var(--accent-color);
         }
 
-        .status-indicator {
+        .tabs-container {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Navigation */
-        .nav {
-            display: flex;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .nav-item {
-            padding: 15px 25px;
-            cursor: pointer;
-            transition: var(--transition);
-            border-bottom: 3px solid transparent;
-            font-weight: 500;
+            transition: background-color 0.2s ease;
             position: relative;
-            overflow: hidden;
         }
 
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+        .tab.active {
+            background: rgba(138, 43, 226, 0.2);
         }
 
-        .nav-item.active {
-            border-bottom-color: var(--text-accent);
-            color: var(--text-accent);
-        }
-
-        .nav-item.active::before {
+        .tab.active::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.1), transparent);
-            animation: shimmer 2s infinite;
+            height: 2px;
+            background: var(--accent-color);
         }
 
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        .tab:hover {
+            background: rgba(138, 43, 226, 0.1);
         }
 
-        /* Content Area */
-        .content {
-            flex: 1;
-            display: flex;
+        .menu-content {
+            position: relative;
+            height: 410px;
             overflow: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
-        .sidebar {
-            width: 250px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .sidebar-section {
-            margin-bottom: 25px;
-        }
-
-        .sidebar-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            margin-bottom: 15px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        .sidebar-item {
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-
-        .sidebar-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar-item.active {
-            background: var(--bg-accent);
-            color: var(--text-accent);
-        }
-
-        .sidebar-item i {
-            width: 16px;
-            text-align: center;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
+        .menu-content::-webkit-scrollbar {
             display: none;
         }
 
-        .main-content.active {
-            display: block;
-        }
-
-        /* Content Sections */
-        .section {
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-accent);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title i {
-            font-size: 16px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        /* Cards */
-        .card {
-            background: var(--bg-secondary);
-            border-radius: 10px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            border-color: var(--text-accent);
-            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: var(--bg-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .card-title {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .card-description {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-
-        /* Toggles */
-        .toggle-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toggle-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-        }
-
-        .toggle-item:hover {
-            border-color: var(--text-accent);
-        }
-
-        .toggle-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-        }
-
-        .toggle-label i {
-            width: 16px;
-            color: var(--text-accent);
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .toggle-switch::before {
-            content: '';
+        .tab-content {
+            display: none;
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background: var(--text-secondary);
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .toggle-switch.active {
-            background: var(--success);
-        }
-
-        .toggle-switch.active::before {
-            transform: translateX(26px);
-            background: white;
-        }
-
-        /* Buttons */
-        .button-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-        }
-
-        .button {
-            padding: 15px 20px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .button:hover {
-            background: var(--bg-accent);
-            border-color: var(--text-accent);
-            transform: translateY(-1px);
-        }
-
-        .button.primary {
-            background: var(--text-accent);
-            border-color: var(--text-accent);
-        }
-
-        .button.danger {
-            background: var(--danger);
-            border-color: var(--danger);
-        }
-
-        .button.success {
-            background: var(--success);
-            border-color: var(--success);
-        }
-
-        /* Inputs */
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .input {
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 12px 15px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: var(--font-main);
-            transition: var(--transition);
+            height: 100%;
+            overflow-y: auto;
         }
 
-        .input:focus {
-            outline: none;
-            border-color: var(--text-accent);
-            box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+        .tab-content.active {
+            display: block;
         }
 
-        /* Footer */
-        .footer {
-            padding: 15px 25px;
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
+        .menu-items {
+            list-style: none;
+            position: relative;
+        }
+
+        .selection-highlight {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 41px;
+            background: var(--highlight-bg);
+            z-index: 1;
+            transition: top var(--transition-speed) ease-out;
+        }
+
+        .menu-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 12px;
-            color: var(--text-secondary);
+            padding: 11px 15px;
+            font-size: 15px;
+            position: relative;
+            height: 41px;
+            transition: background-color 0.2s ease;
+            z-index: 2;
         }
 
-        .footer-info {
+        .menu-item:hover {
+            background: rgba(138, 43, 226, 0.3) !important;
+            cursor: pointer;
+        }
+
+        .item-content {
             display: flex;
-            gap: 20px;
+            width: 100%;
+            align-items: center;
+            z-index: 2;
+        }
+        
+        .item-label { flex-grow: 1; }
+        .item-value { color: var(--primary-text); font-weight: 500; }
+        
+        .toggle-indicator { 
+            font-weight: 600; 
+            margin-left: 10px;
+        }
+        .toggle-indicator.on { color: #2ecc71; }
+        .toggle-indicator.off { color: #ff4757; }
+
+        .footer {
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid var(--border-color);
+            min-height: 20px;
+            font-size: 13px;
+            color: var(--secondary-text);
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
+        #notification-container { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 9999; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
         }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
+        
+        .notification { 
+            background: var(--bg-color); 
+            border: 1px solid var(--border-color); 
+            color: var(--primary-text); 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            border-left: 4px solid var(--accent-color); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            opacity: 0; 
+            animation: slideIn 0.3s forwards, slideOut 0.3s 2.7s forwards; 
         }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
+        
+        @keyframes slideIn { 
+            from { transform: translateX(100%); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
         }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-accent);
+        
+        @keyframes slideOut { 
+            from { transform: translateX(0); opacity: 1; } 
+            to { transform: translateX(100%); opacity: 0; } 
         }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(0,0,0,0.3);
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--secondary-text);
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .breadcrumb i {
+            margin-right: 8px;
+            cursor: pointer;
         }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .menu-container {
-                width: 95%;
-                height: 90%;
-            }
-            
-            .content {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-            }
+        
+        .breadcrumb i:hover {
+            color: var(--accent-color);
+        }
+        
+        .breadcrumb span {
+            margin-left: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="menu-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-ghost"></i>
-                </div>
-                <div class="logo-text">MACHO MENU</div>
-            </div>
-            <div class="status-indicator">
-                <div class="status-dot"></div>
-                <span>UNDETECTED</span>
-            </div>
-        </div>
 
-        <!-- Navigation -->
-        <div class="nav">
-            <div class="nav-item active" data-tab="player">
-                <i class="fas fa-user"></i> Player
-            </div>
-            <div class="nav-item" data-tab="vehicle">
-                <i class="fas fa-car"></i> Vehicle
-            </div>
-            <div class="nav-item" data-tab="weapon">
-                <i class="fas fa-gun"></i> Weapon
-            </div>
-            <div class="nav-item" data-tab="world">
-                <i class="fas fa-globe"></i> World
-            </div>
-            <div class="nav-item" data-tab="teleport">
-                <i class="fas fa-location-dot"></i> Teleport
-            </div>
-            <div class="nav-item" data-tab="troll">
-                <i class="fas fa-face-grin-tongue"></i> Troll
-            </div>
-        </div>
+<div id="notification-container"></div>
 
-        <!-- Content Area -->
-        <div class="content">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="sidebar-section">
-                    <div class="sidebar-title">Player Options</div>
-                    <div class="sidebar-item active" data-section="self">
-                        <i class="fas fa-user"></i> Self Options
-                    </div>
-                    <div class="sidebar-item" data-section="movement">
-                        <i class="fas fa-running"></i> Movement
-                    </div>
-                    <div class="sidebar-item" data-section="appearance">
-                        <i class="fas fa-tshirt"></i> Appearance
-                    </div>
-                </div>
-
-                <div class="sidebar-section">
-                    <div class="sidebar-title">Vehicle Options</div>
-                    <div class="sidebar-item" data-section="spawn">
-                        <i class="fas fa-plus"></i> Spawn Vehicle
-                    </div>
-                    <div class="sidebar-item" data-section="mods">
-                        <i class="fas fa-tools"></i> Vehicle Mods
-                    </div>
-                    <div class="sidebar-item" data-section="performance">
-                        <i class="fas fa-tachometer-alt"></i> Performance
-                    </div>
-                </div>
-
-                <div class="sidebar-section">
-                    <div class="sidebar-title">Weapon Options</div>
-                    <div class="sidebar-item" data-section="give">
-                        <i class="fas fa-gift"></i> Give Weapons
-                    </div>
-                    <div class="sidebar-item" data-section="modify">
-                        <i class="fas fa-magic"></i> Weapon Mods
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="main-content active" id="player-content">
-                <!-- Player content will be dynamically loaded -->
-            </div>
-
-            <div class="main-content" id="vehicle-content">
-                <!-- Vehicle content will be dynamically loaded -->
-            </div>
-
-            <div class="main-content" id="weapon-content">
-                <!-- Weapon content will be dynamically loaded -->
-            </div>
-
-            <div class="main-content" id="world-content">
-                <!-- World content will be dynamically loaded -->
-            </div>
-
-            <div class="main-content" id="teleport-content">
-                <!-- Teleport content will be dynamically loaded -->
-            </div>
-
-            <div class="main-content" id="troll-content">
-                <!-- Troll content will be dynamically loaded -->
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-info">
-                <span>Made with ❤️ by Macho</span>
-                <span>v2.0.1</span>
-            </div>
-            <div class="footer-info">
-                <span>Press DELETE to close</span>
-            </div>
-        </div>
+<div class="menu-container" id="menu-container">
+    <div class="header">RISK</div>
+    
+    <div class="breadcrumb" id="breadcrumb">
+        <i class="fas fa-arrow-left" id="back-button"></i>
+        <span id="current-tab">Player</span>
     </div>
+    
+    <div class="tabs-container" id="tabs-container">
+        <!-- Tabs will be populated by JavaScript -->
+    </div>
+    
+    <div class="menu-content" id="menu-content">
+        <!-- Tab content will be populated by JavaScript -->
+    </div>
+    
+    <div class="footer" id="footer">
+        Player (1/8)
+    </div>
+</div>
 
-    <script>
-        // Menu State
-        let menuState = {
-            currentTab: 'player',
-            currentSection: 'self',
-            toggles: {},
-            inputs: {}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const menuContainer = document.getElementById('menu-container');
+        const tabsContainer = document.getElementById('tabs-container');
+        const menuContent = document.getElementById('menu-content');
+        const footer = document.getElementById('footer');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const currentTabSpan = document.getElementById('current-tab');
+        const backButton = document.getElementById('back-button');
+        const notificationContainer = document.getElementById('notification-container');
+        
+        let selectedTabIndex = 0;
+        let selectedItemIndex = 0;
+        let currentSubmenu = null;
+        let highlightEl = null;
+        const ITEM_HEIGHT = 41;
+        
+        // Menu structure based on your screenshot
+        const menuData = {
+            tabs: [
+                {
+                    id: 'player',
+                    title: 'Player',
+                    items: [
+                        { label: 'Online', type: 'submenu', target: 'online' },
+                        { label: 'Teleport', type: 'submenu', target: 'teleport' },
+                        { label: 'Emotes', type: 'submenu', target: 'emotes' },
+                        { label: 'Weapons', type: 'submenu', target: 'weapons' },
+                        { label: 'Vehicle', type: 'submenu', target: 'vehicle' },
+                        { label: 'Events', type: 'submenu', target: 'events' },
+                        { label: 'Settings', type: 'submenu', target: 'settings' },
+                        { label: 'VIP', type: 'submenu', target: 'vip' },
+                        { label: 'Beta - 1.0', type: 'submenu', target: 'beta' },
+                        { label: 'Risk.lua', type: 'action', action: 'risk_lua' }
+                    ]
+                },
+                {
+                    id: 'triggers',
+                    title: 'Triggers',
+                    items: [
+                        { label: 'Trigger 1', type: 'toggle', stateId: 'trigger1' },
+                        { label: 'Trigger 2', type: 'toggle', stateId: 'trigger2' },
+                        { label: 'Trigger 3', type: 'toggle', stateId: 'trigger3' },
+                        { label: 'Trigger 4', type: 'toggle', stateId: 'trigger4' },
+                        { label: 'Trigger 5', type: 'toggle', stateId: 'trigger5' }
+                    ]
+                },
+                {
+                    id: 'visuals',
+                    title: 'Visuals',
+                    items: [
+                        { label: 'ESP', type: 'toggle', stateId: 'esp' },
+                        { label: 'Crosshair', type: 'toggle', stateId: 'crosshair' },
+                        { label: 'Radar', type: 'toggle', stateId: 'radar' },
+                        { label: 'Night Vision', type: 'toggle', stateId: 'nightvision' }
+                    ]
+                },
+                {
+                    id: 'misc',
+                    title: 'Misc',
+                    items: [
+                        { label: 'Option 1', type: 'toggle', stateId: 'misc1' },
+                        { label: 'Option 2', type: 'toggle', stateId: 'misc2' },
+                        { label: 'Option 3', type: 'toggle', stateId: 'misc3' }
+                    ]
+                }
+            ],
+            submenus: {
+                'online': {
+                    title: 'Online',
+                    items: [
+                        { label: 'Player List', type: 'submenu', target: 'player_list' },
+                        { label: 'Server Info', type: 'action', action: 'server_info' },
+                        { label: 'Join Game', type: 'action', action: 'join_game' }
+                    ]
+                },
+                'teleport': {
+                    title: 'Teleport',
+                    items: [
+                        { label: 'Waypoints', type: 'submenu', target: 'waypoints' },
+                        { label: 'Custom Location', type: 'action', action: 'custom_location' },
+                        { label: 'Last Location', type: 'action', action: 'last_location' }
+                    ]
+                },
+                'emotes': {
+                    title: 'Emotes',
+                    items: [
+                        { label: 'Dance 1', type: 'action', action: 'dance1' },
+                        { label: 'Dance 2', type: 'action', action: 'dance2' },
+                        { label: 'Wave', type: 'action', action: 'wave' },
+                        { label: 'Sit', type: 'action', action: 'sit' }
+                    ]
+                },
+                'weapons': {
+                    title: 'Weapons',
+                    items: [
+                        { label: 'Give All Weapons', type: 'action', action: 'give_all' },
+                        { label: 'Unlimited Ammo', type: 'toggle', stateId: 'unlimited_ammo' },
+                        { label: 'No Recoil', type: 'toggle', stateId: 'no_recoil' }
+                    ]
+                },
+                'vehicle': {
+                    title: 'Vehicle',
+                    items: [
+                        { label: 'Spawn Vehicle', type: 'action', action: 'spawn_vehicle' },
+                        { label: 'Repair Vehicle', type: 'action', action: 'repair_vehicle' },
+                        { label: 'God Mode', type: 'toggle', stateId: 'vehicle_godmode' }
+                    ]
+                },
+                'events': {
+                    title: 'Events',
+                    items: [
+                        { label: 'Event 1', type: 'action', action: 'event1' },
+                        { label: 'Event 2', type: 'action', action: 'event2' }
+                    ]
+                },
+                'settings': {
+                    title: 'Settings',
+                    items: [
+                        { label: 'Graphics', type: 'submenu', target: 'graphics' },
+                        { label: 'Controls', type: 'submenu', target: 'controls' },
+                        { label: 'Audio', type: 'submenu', target: 'audio' }
+                    ]
+                },
+                'vip': {
+                    title: 'VIP',
+                    items: [
+                        { label: 'VIP Features', type: 'submenu', target: 'vip_features' },
+                        { label: 'VIP Status', type: 'action', action: 'vip_status' }
+                    ]
+                },
+                'beta': {
+                    title: 'Beta - 1.0',
+                    items: [
+                        { label: 'Experimental Feature 1', type: 'toggle', stateId: 'exp1' },
+                        { label: 'Experimental Feature 2', type: 'toggle', stateId: 'exp2' }
+                    ]
+                }
+            }
         };
-
-        // Initialize menu
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeMenu();
-            loadTabContent('player', 'self');
-        });
-
-        // Navigation handlers
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const tab = this.getAttribute('data-tab');
-                switchTab(tab);
-            });
-        });
-
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const section = this.getAttribute('data-section');
-                switchSection(section);
-            });
-        });
-
-        function initializeMenu() {
-            // Add click handlers for toggles and buttons
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('toggle-switch')) {
-                    toggleSwitch(e.target);
-                } else if (e.target.classList.contains('button')) {
-                    handleButtonClick(e.target);
-                }
-            });
+        
+        // Option states
+        const optionStates = {};
+        
+        // Initialize the menu
+        function initMenu() {
+            createTabs();
+            createTabContents();
+            selectTab(0);
+            setupEventListeners();
         }
-
-        function switchTab(tab) {
-            // Update navigation
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-
-            // Update content
-            document.querySelectorAll('.main-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(`${tab}-content`).classList.add('active');
-
-            // Load tab content
-            loadTabContent(tab, 'self');
-        }
-
-        function switchSection(section) {
-            // Update sidebar
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-section="${section}"]`).classList.add('active');
-
-            // Load section content
-            loadSectionContent(menuState.currentTab, section);
-        }
-
-        function toggleSwitch(switchElement) {
-            switchElement.classList.toggle('active');
-            const toggleId = switchElement.closest('.toggle-item').getAttribute('data-toggle');
+        
+        // Create tabs
+        function createTabs() {
+            tabsContainer.innerHTML = '';
             
-            if (switchElement.classList.contains('active')) {
-                menuState.toggles[toggleId] = true;
-                // Send enable command to Lua
-                if (window.parent) {
-                    window.parent.postMessage({ 
-                        action: 'toggle', 
-                        feature: toggleId, 
-                        state: true 
-                    }, '*');
+            menuData.tabs.forEach((tab, index) => {
+                const tabEl = document.createElement('div');
+                tabEl.className = 'tab';
+                tabEl.textContent = tab.title;
+                tabEl.dataset.tabId = tab.id;
+                tabEl.dataset.tabIndex = index;
+                
+                tabEl.addEventListener('click', () => {
+                    selectTab(index);
+                });
+                
+                tabsContainer.appendChild(tabEl);
+            });
+        }
+        
+        // Create tab contents
+        function createTabContents() {
+            menuContent.innerHTML = '';
+            
+            menuData.tabs.forEach((tab, index) => {
+                const tabContent = document.createElement('div');
+                tabContent.className = 'tab-content';
+                tabContent.id = `tab-${tab.id}`;
+                tabContent.dataset.tabIndex = index;
+                
+                const menuItems = document.createElement('ul');
+                menuItems.className = 'menu-items';
+                menuItems.id = `menu-items-${tab.id}`;
+                
+                const highlight = document.createElement('div');
+                highlight.className = 'selection-highlight';
+                highlight.id = `highlight-${tab.id}`;
+                
+                menuItems.appendChild(highlight);
+                tabContent.appendChild(menuItems);
+                menuContent.appendChild(tabContent);
+                
+                populateTabContent(tab.id);
+            });
+        }
+        
+        // Populate tab content with items
+        function populateTabContent(tabId) {
+            const tab = menuData.tabs.find(t => t.id === tabId);
+            if (!tab) return;
+            
+            const menuItemsEl = document.getElementById(`menu-items-${tabId}`);
+            if (!menuItemsEl) return;
+            
+            // Clear existing items (except the highlight)
+            const highlight = document.getElementById(`highlight-${tabId}`);
+            menuItemsEl.innerHTML = '';
+            menuItemsEl.appendChild(highlight);
+            
+            // Add menu items
+            tab.items.forEach((item, index) => {
+                const menuItemEl = document.createElement('li');
+                menuItemEl.className = 'menu-item';
+                menuItemEl.dataset.itemIndex = index;
+                
+                let content = `<div class="item-content">`;
+                content += `<span class="item-label">${item.label}</span>`;
+                
+                if (item.type === 'submenu') {
+                    content += `<i class="fas fa-chevron-right"></i>`;
+                } else if (item.type === 'toggle') {
+                    const isOn = optionStates[item.stateId] || false;
+                    content += `<span class="toggle-indicator ${isOn ? 'on' : 'off'}">${isOn ? 'ON' : 'OFF'}</span>`;
                 }
+                
+                content += `</div>`;
+                menuItemEl.innerHTML = content;
+                
+                menuItemEl.addEventListener('click', () => {
+                    handleItemClick(tabId, index);
+                });
+                
+                menuItemsEl.appendChild(menuItemEl);
+            });
+            
+            // Update selection highlight for this tab
+            updateSelection(tabId, 0);
+        }
+        
+        // Select a tab
+        function selectTab(index) {
+            // Update tab selection
+            const tabs = tabsContainer.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabs[index].classList.add('active');
+            
+            // Update tab content
+            const tabContents = menuContent.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            tabContents[index].classList.add('active');
+            
+            selectedTabIndex = index;
+            selectedItemIndex = 0;
+            currentSubmenu = null;
+            
+            // Update breadcrumb
+            currentTabSpan.textContent = menuData.tabs[index].title;
+            backButton.style.visibility = 'hidden';
+            
+            // Update selection
+            updateSelection(menuData.tabs[index].id, 0);
+            
+            // Update footer
+            updateFooter();
+        }
+        
+        // Handle item click
+        function handleItemClick(tabId, itemIndex) {
+            const tab = menuData.tabs.find(t => t.id === tabId);
+            if (!tab || !tab.items[itemIndex]) return;
+            
+            const item = tab.items[itemIndex];
+            
+            if (item.type === 'submenu') {
+                openSubmenu(item.target);
+            } else if (item.type === 'toggle') {
+                toggleOption(item.stateId);
+                populateTabContent(tabId);
+                updateSelection(tabId, itemIndex);
+            } else if (item.type === 'action') {
+                executeAction(item.action);
+            }
+        }
+        
+        // Open a submenu
+        function openSubmenu(submenuId) {
+            const submenu = menuData.submenus[submenuId];
+            if (!submenu) return;
+            
+            currentSubmenu = submenu;
+            
+            // Update breadcrumb
+            currentTabSpan.textContent = submenu.title;
+            backButton.style.visibility = 'visible';
+            
+            // Populate the current tab with submenu items
+            const currentTabId = menuData.tabs[selectedTabIndex].id;
+            const menuItemsEl = document.getElementById(`menu-items-${currentTabId}`);
+            const highlight = document.getElementById(`highlight-${currentTabId}`);
+            
+            menuItemsEl.innerHTML = '';
+            menuItemsEl.appendChild(highlight);
+            
+            // Add submenu items
+            submenu.items.forEach((item, index) => {
+                const menuItemEl = document.createElement('li');
+                menuItemEl.className = 'menu-item';
+                menuItemEl.dataset.itemIndex = index;
+                
+                let content = `<div class="item-content">`;
+                content += `<span class="item-label">${item.label}</span>`;
+                
+                if (item.type === 'submenu') {
+                    content += `<i class="fas fa-chevron-right"></i>`;
+                } else if (item.type === 'toggle') {
+                    const isOn = optionStates[item.stateId] || false;
+                    content += `<span class="toggle-indicator ${isOn ? 'on' : 'off'}">${isOn ? 'ON' : 'OFF'}</span>`;
+                }
+                
+                content += `</div>`;
+                menuItemEl.innerHTML = content;
+                
+                menuItemEl.addEventListener('click', () => {
+                    handleSubmenuItemClick(submenuId, index);
+                });
+                
+                menuItemsEl.appendChild(menuItemEl);
+            });
+            
+            // Update selection
+            selectedItemIndex = 0;
+            updateSelection(currentTabId, 0);
+            
+            // Update footer
+            updateFooter();
+        }
+        
+        // Handle submenu item click
+        function handleSubmenuItemClick(submenuId, itemIndex) {
+            const submenu = menuData.submenus[submenuId];
+            if (!submenu || !submenu.items[itemIndex]) return;
+            
+            const item = submenu.items[itemIndex];
+            
+            if (item.type === 'submenu') {
+                openSubmenu(item.target);
+            } else if (item.type === 'toggle') {
+                toggleOption(item.stateId);
+                
+                // Re-render the submenu
+                openSubmenu(submenuId);
+                updateSelection(menuData.tabs[selectedTabIndex].id, itemIndex);
+            } else if (item.type === 'action') {
+                executeAction(item.action);
+            }
+        }
+        
+        // Go back to the main tab view
+        function goBack() {
+            if (currentSubmenu) {
+                // If we're in a submenu, go back to the tab
+                currentSubmenu = null;
+                currentTabSpan.textContent = menuData.tabs[selectedTabIndex].title;
+                backButton.style.visibility = 'hidden';
+                
+                // Repopulate the tab content
+                populateTabContent(menuData.tabs[selectedTabIndex].id);
+                updateSelection(menuData.tabs[selectedTabIndex].id, 0);
             } else {
-                menuState.toggles[toggleId] = false;
-                // Send disable command to Lua
-                if (window.parent) {
-                    window.parent.postMessage({ 
-                        action: 'toggle', 
-                        feature: toggleId, 
-                        state: false 
-                    }, '*');
+                // If we're already at the tab level, cycle through tabs
+                selectTab((selectedTabIndex - 1 + menuData.tabs.length) % menuData.tabs.length);
+            }
+            
+            updateFooter();
+        }
+        
+        // Toggle an option
+        function toggleOption(stateId) {
+            optionStates[stateId] = !optionStates[stateId];
+            showNotification(`${stateId} ${optionStates[stateId] ? 'enabled' : 'disabled'}`);
+        }
+        
+        // Execute an action
+        function executeAction(action) {
+            showNotification(`Executing: ${action}`);
+            // In a real implementation, this would communicate with the Lua backend
+        }
+        
+        // Update selection highlight
+        function updateSelection(tabId, itemIndex) {
+            const menuItemsEl = document.getElementById(`menu-items-${tabId}`);
+            if (!menuItemsEl) return;
+            
+            const items = menuItemsEl.querySelectorAll('.menu-item');
+            const highlight = document.getElementById(`highlight-${tabId}`);
+            
+            if (!items[itemIndex] || !highlight) return;
+            
+            // Update selected item styling
+            items.forEach((item, i) => {
+                item.classList.toggle('selected', i === itemIndex);
+            });
+            
+            // Update highlight position
+            const itemTop = itemIndex * ITEM_HEIGHT;
+            highlight.style.top = `${itemTop}px`;
+            
+            selectedItemIndex = itemIndex;
+        }
+        
+        // Update footer
+        function updateFooter() {
+            if (currentSubmenu) {
+                footer.textContent = `${currentSubmenu.title} - Item ${selectedItemIndex + 1}/${currentSubmenu.items.length}`;
+            } else {
+                const tab = menuData.tabs[selectedTabIndex];
+                footer.textContent = `${tab.title} - Item ${selectedItemIndex + 1}/${tab.items.length}`;
+            }
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notificationContainer.appendChild(notification);
+            setTimeout(() => { notification.remove(); }, 3000);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Back button
+            backButton.addEventListener('click', goBack);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        navigateUp();
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        navigateDown();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        navigateLeft();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        navigateRight();
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        selectItem();
+                        break;
+                    case 'Backspace':
+                        e.preventDefault();
+                        goBack();
+                        break;
                 }
-            }
+            });
         }
-
-        function handleButtonClick(button) {
-            const action = button.getAttribute('data-action');
-            const command = button.getAttribute('data-command');
+        
+        // Navigation functions
+        function navigateUp() {
+            let itemCount;
             
-            if (window.parent) {
-                window.parent.postMessage({ 
-                    action: 'execute',
-                    command: command || action
-                }, '*');
-            }
-        }
-
-        // Content loading functions
-        function loadTabContent(tab, section) {
-            menuState.currentTab = tab;
-            const contentElement = document.getElementById(`${tab}-content`);
-            
-            switch(tab) {
-                case 'player':
-                    loadPlayerContent(contentElement, section);
-                    break;
-                case 'vehicle':
-                    loadVehicleContent(contentElement, section);
-                    break;
-                case 'weapon':
-                    loadWeaponContent(contentElement, section);
-                    break;
-                case 'world':
-                    loadWorldContent(contentElement, section);
-                    break;
-                case 'teleport':
-                    loadTeleportContent(contentElement, section);
-                    break;
-                case 'troll':
-                    loadTrollContent(contentElement, section);
-                    break;
-            }
-        }
-
-        function loadSectionContent(tab, section) {
-            menuState.currentSection = section;
-            const contentElement = document.getElementById(`${tab}-content`);
-            loadTabContent(tab, section);
-        }
-
-        // Content templates
-        function loadPlayerContent(container, section) {
-            let html = '';
-            
-            if (section === 'self') {
-                html = `
-                    <div class="section">
-                        <div class="section-title">
-                            <i class="fas fa-shield-alt"></i>
-                            Player Protection
-                        </div>
-                        <div class="toggle-group">
-                            <div class="toggle-item" data-toggle="godmode">
-                                <div class="toggle-label">
-                                    <i class="fas fa-cross"></i>
-                                    Godmode
-                                </div>
-                                <div class="toggle-switch"></div>
-                            </div>
-                            <div class="toggle-item" data-toggle="invisibility">
-                                <div class="toggle-label">
-                                    <i class="fas fa-eye-slash"></i>
-                                    Invisibility
-                                </div>
-                                <div class="toggle-switch"></div>
-                            </div>
-                            <div class="toggle-item" data-toggle="noragdoll">
-                                <div class="toggle-label">
-                                    <i class="fas fa-user-slash"></i>
-                                    No Ragdoll
-                                </div>
-                                <div class="toggle-switch"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">
-                            <i class="fas fa-heart"></i>
-                            Health & Stats
-                        </div>
-                        <div class="button-group">
-                            <div class="button success" data-command="vheal">
-                                <i class="fas fa-heart"></i>
-                                Heal Player
-                            </div>
-                            <div class="button success" data-command="varmor">
-                                <i class="fas fa-shield-alt"></i>
-                                Add Armor
-                            </div>
-                            <div class="button" data-command="vrevive">
-                                <i class="fas fa-plus"></i>
-                                Revive
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">
-                            <i class="fas fa-tshirt"></i>
-                            Appearance
-                        </div>
-                        <div class="button-group">
-                            <div class="button" data-command="vrandomoutfit">
-                                <i class="fas fa-random"></i>
-                                Random Outfit
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (section === 'movement') {
-                html = `
-                    <div class="section">
-                        <div class="section-title">
-                            <i class="fas fa-running"></i>
-                            Movement Options
-                        </div>
-                        <div class="toggle-group">
-                            <div class="toggle-item" data-toggle="speedhack">
-                                <div class="toggle-label">
-                                    <i class="fas fa-bolt"></i>
-                                    Speed Hack
-                                </div>
-                                <div class="toggle-switch"></div>
-                            </div>
-                            <div class="toggle-item" data-toggle="superjump">
-                                <div class="toggle-label">
-                                    <i class="fas fa-arrow-up"></i>
-                                    Super Jump
-                                </div>
-                                <div class="toggle-switch"></div>
-                            </div>
-                            <div class="toggle-item" data-toggle="noclip">
-                                <div class="toggle-label">
-                                    <i class="fas fa-ghost"></i>
-                                    No Clip
-                                </div>
-                                <div class="toggle-switch"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+            if (currentSubmenu) {
+                itemCount = currentSubmenu.items.length;
+            } else {
+                itemCount = menuData.tabs[selectedTabIndex].items.length;
             }
             
-            container.innerHTML = html;
-            container.classList.add('fade-in');
+            selectedItemIndex = (selectedItemIndex - 1 + itemCount) % itemCount;
+            updateSelection(menuData.tabs[selectedTabIndex].id, selectedItemIndex);
+            updateFooter();
         }
-
-        function loadVehicleContent(container, section) {
-            let html = `
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-car"></i>
-                        Vehicle Options
-                    </div>
-                    <div class="toggle-group">
-                        <div class="toggle-item" data-toggle="vehicle_godmode">
-                            <div class="toggle-label">
-                                <i class="fas fa-shield-alt"></i>
-                                Vehicle Godmode
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                        <div class="toggle-item" data-toggle="flying_car">
-                            <div class="toggle-label">
-                                <i class="fas fa-rocket"></i>
-                                Flying Car
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-wrench"></i>
-                        Vehicle Actions
-                    </div>
-                    <div class="button-group">
-                        <div class="button" data-command="vfix">
-                            <i class="fas fa-hammer"></i>
-                            Repair Vehicle
-                        </div>
-                        <div class="button" data-command="vvehicle max">
-                            <i class="fas fa-tachometer-alt"></i>
-                            Max Upgrade
-                        </div>
-                        <div class="button" data-command="vspawn adder">
-                            <i class="fas fa-plus"></i>
-                            Spawn Adder
-                        </div>
-                    </div>
-                </div>
-            `;
+        
+        function navigateDown() {
+            let itemCount;
             
-            container.innerHTML = html;
-            container.classList.add('fade-in');
-        }
-
-        function loadWeaponContent(container, section) {
-            let html = `
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-gun"></i>
-                        Weapon Options
-                    </div>
-                    <div class="toggle-group">
-                        <div class="toggle-item" data-toggle="infinite_ammo">
-                            <div class="toggle-label">
-                                <i class="fas fa-infinity"></i>
-                                Infinite Ammo
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                        <div class="toggle-item" data-toggle="one_shot_kill">
-                            <div class="toggle-label">
-                                <i class="fas fa-skull"></i>
-                                One Shot Kill
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-gift"></i>
-                        Give Weapons
-                    </div>
-                    <div class="button-group">
-                        <div class="button" data-command="vweapons">
-                            <i class="fas fa-gift"></i>
-                            All Weapons
-                        </div>
-                        <div class="button" data-command="vweapon WEAPON_PISTOL">
-                            <i class="fas fa-gun"></i>
-                            Pistol
-                        </div>
-                        <div class="button" data-command="vweapon WEAPON_ASSAULTRIFLE">
-                            <i class="fas fa-gun"></i>
-                            Assault Rifle
-                        </div>
-                        <div class="button" data-command="vweapon WEAPON_RPG">
-                            <i class="fas fa-rocket"></i>
-                            RPG
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = html;
-            container.classList.add('fade-in');
-        }
-
-        function loadWorldContent(container, section) {
-            let html = `
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-globe"></i>
-                        World Options
-                    </div>
-                    <div class="toggle-group">
-                        <div class="toggle-item" data-toggle="esp">
-                            <div class="toggle-label">
-                                <i class="fas fa-eye"></i>
-                                Player ESP
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                        <div class="toggle-item" data-toggle="night_vision">
-                            <div class="toggle-label">
-                                <i class="fas fa-moon"></i>
-                                Night Vision
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                        <div class="toggle-item" data-toggle="thermal_vision">
-                            <div class="toggle-label">
-                                <i class="fas fa-fire"></i>
-                                Thermal Vision
-                            </div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = html;
-            container.classList.add('fade-in');
-        }
-
-        function loadTeleportContent(container, section) {
-            let html = `
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-location-dot"></i>
-                        Teleport Locations
-                    </div>
-                    <div class="grid">
-                        <div class="card" data-command="vtp 1">
-                            <div class="card-header">
-                                <div class="card-icon">
-                                    <i class="fas fa-city"></i>
-                                </div>
-                                <div class="card-title">Legion Square</div>
-                            </div>
-                            <div class="card-description">Teleport to the city center</div>
-                        </div>
-                        <div class="card" data-command="vtp 2">
-                            <div class="card-header">
-                                <div class="card-icon">
-                                    <i class="fas fa-plane"></i>
-                                </div>
-                                <div class="card-title">Airport</div>
-                            </div>
-                            <div class="card-description">Teleport to LSIA</div>
-                        </div>
-                        <div class="card" data-command="vtp 3">
-                            <div class="card-header">
-                                <div class="card-icon">
-                                    <i class="fas fa-building"></i>
-                                </div>
-                                <div class="card-title">Maze Bank</div>
-                            </div>
-                            <div class="card-description">Teleport to the tallest building</div>
-                        </div>
-                        <div class="card" data-command="vtp 4">
-                            <div class="card-header">
-                                <div class="card-icon">
-                                    <i class="fas fa-helmet-safety"></i>
-                                </div>
-                                <div class="card-title">Military Base</div>
-                            </div>
-                            <div class="card-description">Teleport to Fort Zancudo</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = html;
-            container.classList.add('fade-in');
-        }
-
-        function loadTrollContent(container, section) {
-            let html = `
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-face-grin-tongue"></i>
-                        Troll Options
-                    </div>
-                    <div class="button-group">
-                        <div class="button danger" data-command="vkillall">
-                            <i class="fas fa-skull"></i>
-                            Kill Everyone
-                        </div>
-                        <div class="button danger" data-command="vtazeall">
-                            <i class="fas fa-bolt"></i>
-                            Taze Everyone
-                        </div>
-                        <div class="button" data-command="vconeall">
-                            <i class="fas fa-triangle-exclamation"></i>
-                            Cone Everyone
-                        </div>
-                        <div class="button" data-command="vfreezeall">
-                            <i class="fas fa-snowflake"></i>
-                            Freeze Everyone
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">
-                        <i class="fas fa-car-crash"></i>
-                        Vehicle Troll
-                    </div>
-                    <div class="button-group">
-                        <div class="button danger" data-command="vlaunchall">
-                            <i class="fas fa-rocket"></i>
-                            Launch Vehicles
-                        </div>
-                        <div class="button" data-command="deletecars">
-                            <i class="fas fa-trash"></i>
-                            Delete All Cars
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = html;
-            container.classList.add('fade-in');
-        }
-
-        // Handle messages from Lua
-        window.addEventListener('message', function(event) {
-            const data = event.data;
-            
-            if (data.action === 'update_toggle') {
-                const toggle = document.querySelector(`[data-toggle="${data.feature}"] .toggle-switch`);
-                if (toggle) {
-                    if (data.state) {
-                        toggle.classList.add('active');
-                    } else {
-                        toggle.classList.remove('active');
-                    }
-                }
+            if (currentSubmenu) {
+                itemCount = currentSubmenu.items.length;
+            } else {
+                itemCount = menuData.tabs[selectedTabIndex].items.length;
             }
-        });
-
-        // Add card click handlers
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.card')) {
-                const card = e.target.closest('.card');
-                const command = card.getAttribute('data-command');
-                if (command && window.parent) {
-                    window.parent.postMessage({ 
-                        action: 'execute',
-                        command: command
-                    }, '*');
-                }
+            
+            selectedItemIndex = (selectedItemIndex + 1) % itemCount;
+            updateSelection(menuData.tabs[selectedTabIndex].id, selectedItemIndex);
+            updateFooter();
+        }
+        
+        function navigateLeft() {
+            if (!currentSubmenu) {
+                selectTab((selectedTabIndex - 1 + menuData.tabs.length) % menuData.tabs.length);
             }
-        });
-    </script>
+        }
+        
+        function navigateRight() {
+            if (!currentSubmenu) {
+                selectTab((selectedTabIndex + 1) % menuData.tabs.length);
+            }
+        }
+        
+        function selectItem() {
+            if (currentSubmenu) {
+                handleSubmenuItemClick(currentSubmenu.id, selectedItemIndex);
+            } else {
+                handleItemClick(menuData.tabs[selectedTabIndex].id, selectedItemIndex);
+            }
+        }
+        
+        // Initialize the menu
+        initMenu();
+    });
+</script>
+
 </body>
 </html>
