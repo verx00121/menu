@@ -1,229 +1,226 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Simple Menu</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Toggle Menu</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: transparent; overflow: hidden; color: white; }
-        
-        #menu {
-            position: fixed;
-            top: 50px;
-            left: 50px;
-            width: 400px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #ff00ff;
-            border-radius: 10px;
-            display: none;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .header {
-            background: rgba(255, 0, 255, 0.3);
-            padding: 10px;
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
             text-align: center;
-            font-weight: bold;
-            border-bottom: 1px solid #ff00ff;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .menu-container {
+            margin: 20px 0;
+        }
+        
+        .menu-toggle {
+            background-color: #4a00e0;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-toggle:hover {
+            background-color: #8e2de2;
+            transform: translateY(-2px);
+        }
+        
+        .menu {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .menu.active {
+            display: block;
         }
         
         .menu-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .menu-item:last-child {
-            border-bottom: none;
-        }
-        
-        .menu-item.active {
-            background: rgba(255, 0, 255, 0.2);
-        }
-        
-        .toggle {
-            width: 50px;
-            height: 25px;
-            background: #333;
-            border-radius: 25px;
-            position: relative;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
         }
         
-        .toggle.on {
-            background: #00ff00;
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+            border-left: 4px solid #8e2de2;
         }
         
-        .toggle-knob {
-            width: 21px;
-            height: 21px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: left 0.2s;
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
         }
         
-        .toggle.on .toggle-knob {
-            left: 27px;
+        .instructions h2 {
+            margin-bottom: 15px;
+            color: #8e2de2;
         }
         
-        .category {
-            background: rgba(255, 0, 255, 0.4);
+        .instructions ul {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .fps-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
             padding: 8px 15px;
-            font-weight: bold;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="menu">
-        <div class="header">SIMPLE MENU - INSERT TO TOGGLE</div>
-        <div id="menu-content">
-            <!-- Menu content will be filled by LUA -->
+    <div class="fps-counter">114fps</div>
+    
+    <div class="container">
+        <h1>SIMPLE TOGGLE MENU</h1>
+        <p class="subtitle">INSERT key to toggle menu | Click button to toggle menu</p>
+        
+        <div class="menu-container">
+            <button class="menu-toggle" id="menuToggle">TOGGLE MENU</button>
+            
+            <div class="menu" id="menu">
+                <div class="menu-item">Home</div>
+                <div class="menu-item">Settings</div>
+                <div class="menu-item">Profile</div>
+                <div class="menu-item">Messages</div>
+                <div class="menu-item">Friends</div>
+                <div class="menu-item">Logout</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>How to Use This Menu</h2>
+            <ul>
+                <li>Click the "TOGGLE MENU" button to show/hide the menu</li>
+                <li>Press the INSERT key on your keyboard to toggle the menu</li>
+                <li>Click on any menu item to select it</li>
+                <li>The menu will automatically close when you click outside of it</li>
+            </ul>
         </div>
     </div>
 
     <script>
-        let currentSelection = 0;
-        let menuData = [];
-        let menuVisible = false;
-
-        // Handle messages from LUA
-        window.addEventListener('message', function(event) {
-            const data = event.data;
-            
-            if (data.action === 'showMenu') {
-                document.getElementById('menu').style.display = 'block';
-                menuVisible = true;
-                updateSelection();
-            }
-            else if (data.action === 'hideMenu') {
-                document.getElementById('menu').style.display = 'none';
-                menuVisible = false;
-            }
-            else if (data.action === 'updateMenu') {
-                menuData = data.menuData;
-                renderMenu();
-            }
-            else if (data.action === 'navigate') {
-                if (data.direction === 'up') {
-                    currentSelection = Math.max(0, currentSelection - 1);
-                } else if (data.direction === 'down') {
-                    currentSelection = Math.min(menuData.length - 1, currentSelection + 1);
-                }
-                updateSelection();
-            }
-            else if (data.action === 'select') {
-                const item = menuData[currentSelection];
-                if (item && item.type === 'toggle') {
-                    // Toggle the item
-                    item.value = !item.value;
-                    
-                    // Send back to LUA
-                    fetch(`https://${GetParentResourceName()}/menuToggle`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            toggleName: item.toggleName,
-                            state: item.value
-                        })
-                    });
-                    
-                    renderMenu();
-                }
+        // Get DOM elements
+        const menuToggle = document.getElementById('menuToggle');
+        const menu = document.getElementById('menu');
+        
+        // Toggle menu function
+        function toggleMenu() {
+            menu.classList.toggle('active');
+        }
+        
+        // Button click event
+        menuToggle.addEventListener('click', toggleMenu);
+        
+        // Keyboard event for INSERT key (key code 45)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Insert' || event.keyCode === 45) {
+                toggleMenu();
+                event.preventDefault(); // Prevent default behavior
             }
         });
-
-        function renderMenu() {
-            const container = document.getElementById('menu-content');
-            let html = '';
-            
-            menuData.forEach((item, index) => {
-                if (item.type === 'category') {
-                    html += `<div class="category">${item.name}</div>`;
-                } 
-                else if (item.type === 'toggle') {
-                    const activeClass = index === currentSelection ? 'active' : '';
-                    const toggleClass = item.value ? 'toggle on' : 'toggle';
-                    html += `
-                        <div class="menu-item ${activeClass}" data-index="${index}">
-                            <span>${item.name}</span>
-                            <div class="${toggleClass}" onclick="toggleItem(${index})">
-                                <div class="toggle-knob"></div>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-            
-            container.innerHTML = html;
-        }
-
-        function updateSelection() {
-            const items = document.querySelectorAll('.menu-item');
-            items.forEach((item, index) => {
-                if (index === currentSelection) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        }
-
-        function toggleItem(index) {
-            currentSelection = index;
-            const item = menuData[index];
-            if (item && item.type === 'toggle') {
-                item.value = !item.value;
-                
-                fetch(`https://${GetParentResourceName()}/menuToggle`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        toggleName: item.toggleName,
-                        state: item.value
-                    })
-                });
-                
-                renderMenu();
-                updateSelection();
-            }
-        }
-
-        // Listen for key events from LUA
-        window.addEventListener('keydown', function(event) {
-            if (!menuVisible) return;
-            
-            if (event.key === 'ArrowUp') {
-                currentSelection = Math.max(0, currentSelection - 1);
-                updateSelection();
-                event.preventDefault();
-            }
-            else if (event.key === 'ArrowDown') {
-                currentSelection = Math.min(menuData.length - 1, currentSelection + 1);
-                updateSelection();
-                event.preventDefault();
-            }
-            else if (event.key === 'Enter') {
-                const item = menuData[currentSelection];
-                if (item && item.type === 'toggle') {
-                    item.value = !item.value;
-                    
-                    fetch(`https://${GetParentResourceName()}/menuToggle`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            toggleName: item.toggleName,
-                            state: item.value
-                        })
-                    });
-                    
-                    renderMenu();
-                }
-                event.preventDefault();
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (menu.classList.contains('active') && 
+                !menu.contains(event.target) && 
+                !menuToggle.contains(event.target)) {
+                menu.classList.remove('active');
             }
         });
+        
+        // Add click events to menu items
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                alert(`You selected: ${this.textContent}`);
+                menu.classList.remove('active');
+            });
+        });
+        
+        // Simulate FPS counter update
+        setInterval(() => {
+            const fpsElement = document.querySelector('.fps-counter');
+            const randomFPS = Math.floor(Math.random() * 30) + 100; // Random FPS between 100-130
+            fpsElement.textContent = `${randomFPS}fps`;
+        }, 1000);
     </script>
 </body>
 </html>
