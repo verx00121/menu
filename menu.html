@@ -1,1329 +1,228 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mod Menu</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <title>Simple Menu</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', Arial, Helvetica, sans-serif; user-select: none; }
-        :root {
-            --main-color: rgba(19, 19, 23, 1);
-            --main-color-transparent: rgba(19, 19, 23, 0.7);
-            --main-color-shadow: rgba(19, 19, 23, 0.5);
-        }
-        html { font-size: 16px; }
-        body { background-color: transparent; overflow: hidden; }
-        @media screen and (min-width: 1921px) { html { font-size: 22px; } }
-
-        @keyframes rainbow-glow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        #watermark { position: fixed; top: 25px; left: 25px; display: flex; flex-direction: column; align-items: flex-start; background: rgb(19, 19, 23); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0; border-radius: 8px; color: #f0f0f0; z-index: 9999; pointer-events: none; isolation: isolate; overflow: hidden; }
-        .watermark-content { display: flex; align-items: center; padding: 8px 15px; }
-        #watermark img { height: 26px; width: auto; margin-right: 12px; filter: brightness(0) invert(1); }
-        .watermark-text { display: flex; flex-direction: column; line-height: 1.1; }
-        .watermark-text span:first-child { font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; }
-        .watermark-author { font-size: 0.65rem; font-weight: 400; opacity: 0.6; color: #ddd; }
-        .watermark-bar { width: 100%; height: 2px; background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); background-size: 200% 200%; animation: rainbow-glow 3s linear infinite; }
-
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 1; transition: opacity 1.5s ease-out; background-color: transparent; }
-        #loading-overlay.hidden { opacity: 0; pointer-events: none; }
-        .loading-container { display: flex; flex-direction: column; align-items: center; gap: 1.2rem; padding: 2rem; width: 24rem; max-width: 90vw; background-color: #0A0A0A; border: 1px solid #2c2c2c; border-radius: 1rem; opacity: 0; transform: translateY(20px); animation: fadeInLoadingContainer 1s ease-out 0.5s forwards; text-align: center; }
-        @keyframes fadeInLoadingContainer { to { opacity: 1; transform: translateY(0); } }
-        #loading-overlay.closing .loading-container { transition: opacity 0.5s ease-out, transform 0.5s ease-out; opacity: 0; transform: scale(0.95); }
-        .loading-logo { height: 3rem; margin-bottom: 0.5rem; filter: brightness(0) invert(1); animation: floatLogoSimple 6s infinite ease-in-out; }
-        @keyframes floatLogoSimple { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .loading-spinner { border: 0.3rem solid #333; border-left-color: #ff6600; border-radius: 50%; width: 3.5rem; height: 3.5rem; animation: spin 1s linear infinite; }
-        #loading-text { font-size: 0.8rem; font-weight: 700; display: block; text-transform: uppercase; letter-spacing: 0.15rem; color: #eee; }
-        #loading-tip { font-size: 0.7rem; font-weight: 400; color: #aaa; min-height: 2.2rem; transition: opacity 0.5s ease-in-out; white-space: normal; max-width: 100%; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: transparent; overflow: hidden; color: white; }
         
-        #music-elements { opacity: 0; transition: opacity 0.8s ease-in; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-        #song-preview { display: flex; align-items: center; gap: 1rem; position: relative; width: 100%; background-color: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 0.75rem; padding: 0.75rem; }
-        #song-preview .album-art { width: 3.5rem; height: 3.5rem; border-radius: 0.5rem; }
-        #song-preview .song-details { display: flex; flex-direction: column; text-align: left; flex: 1; min-width: 0; }
-        #song-preview .song-details .title { font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-        #song-preview .song-details .artist { font-size: 0.75rem; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #audio-visualizer { width: 100%; height: 2rem; margin-top: 0.5rem; }
-        .progress-bar-container { width: 100%; height: 5px; background-color: #2c2c2c; border-radius: 5px; overflow: hidden; }
-        .progress-bar-fill { width: 0%; height: 100%; background-color: #ff6600; border-radius: 5px; transition: width 0.5s ease-out; }
-
-        #mod-menu { position: fixed; top: 45%; left: 30px; transform: translateY(-50%); width: 25rem; pointer-events: auto; display: flex; flex-direction: column; gap: 0.5rem; transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out; }
-        #mod-menu.closed { opacity: 0; transform: translateY(-50%) scale(0.95); pointer-events: none; }
-        .menu-top, .menu-bottom { background-color: rgba(15, 15, 15, 0.8); border-radius: 1rem; overflow: hidden; color: #ffffff; }
-        #banner-container { width: 100%; max-height: 10.7rem; transition: max-height 0.4s ease-in-out; overflow: hidden; }
-        #banner-container > * { width: 100%; height: 100%; object-fit: fill; display: block; }
-        #sub-header { position: relative; display: flex; align-items: center; background-color: rgba(10, 10, 10, 0.9); padding: 0; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
-        .sub-category-tab { position: relative; overflow: hidden; flex: 1; text-align: center; }
-        #sub-header span:not(.soon-badge) { position: relative; z-index: 1; color: #aaa; padding: 0.4rem 0.5rem; font-weight: 400; display: block; }
-        #sub-header span.active-sub { color: #ffffff; }
-        #sub-header .selection-bar { position: absolute; bottom: 0; left: 0; height: 100%; background: linear-gradient(to top, var(--main-color) 30%, transparent); z-index: 0; transition: transform 0.2s ease-in-out, width 0.2s ease-in-out; }
-        
-        .sub-category-tab.coming-soon > span:not(.soon-badge) { opacity: 0.5; }
-        .soon-badge { position: absolute; top: 2px; right: 4px; font-size: 0.5rem; font-weight: 700; color: #121212; background-color: #ffc107; padding: 1px 4px; border-radius: 4px; line-height: 1; z-index: 2; }
-        
-        #menu-content { overflow-y: scroll; scrollbar-width: none; -ms-overflow-style: none; transition: max-height 0.3s ease-in-out; }
-        #menu-content::-webkit-scrollbar { display: none; }
-        #menu-content ul { list-style-type: none; padding: 0.6rem 0.4rem; }
-
-        #menu-content ul li { padding: 0.4rem 0.85rem; font-size: 0.85rem; background-color: rgba(20, 20, 20, 0.6); display: flex; justify-content: space-between; align-items: center; border-radius: 0.5rem; margin-bottom: 0.15rem; transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out; }
-        #menu-content ul li:last-child { margin-bottom: 0; }
-        #menu-content ul li.active { background: linear-gradient(to right, var(--main-color), var(--main-color-transparent)); color: #ffffff; }
-        .menu-footer { padding: 0.6rem 0.85rem; background-color: rgba(10, 10, 10, 0.9); font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
-        .indicator { font-weight: bold; display: flex; align-items: center; }
-        .indicator .material-icons-outlined { font-size: 1.2rem; color: #aaa; transition: color 0.1s ease-in-out; }
-        #menu-content ul li.active .indicator .material-icons-outlined { color: #fff; }
-        .toggle-switch { width: 2.8rem; height: 1.5rem; background-color: rgba(255, 255, 255, 0.15); border: none; border-radius: 1.5rem; position: relative; cursor: pointer; transition: background-color 0.3s ease; }
-        .toggle-switch.toggled { background-color: #48BB78; }
-        .toggle-switch .thumb { width: 1.1rem; height: 1.1rem; background-color: #fff; border-radius: 50%; position: absolute; top: 0.2rem; left: 0.2rem; transform: translateY(0); transition: transform 0.3s ease; }
-        .toggle-switch.toggled .thumb { transform: translateX(1.3rem); }
-        .slider-container { display: flex; align-items: center; width: 8rem; gap: 0.6rem; }
-        .slider-bar { flex: 1; height: 0.4rem; background-color: rgba(10, 10, 10, 0.9); border-radius: 0.4rem; overflow: hidden; }
-        .slider-fill { width: 0; height: 100%; background-color: #3B82F6; border-radius: 0.4rem; transition: width 0.3s ease-out; }
-        .slider-value { font-size: 0.8rem; font-weight: bold; color: #ddd; }
-        .combo-container { font-weight: 400; color: #ddd; }
-        .combo-container span { margin: 0 0.45rem; }
-        .color-picker-indicator { display: flex; align-items: center; gap: 0.5rem; }
-        .color-preview { width: 1.5rem; height: 1rem; border-radius: 0.4rem; border: 1px solid rgba(255, 255, 255, 0.5); }
-        .multi-indicator { display: flex; align-items: center; gap: 0.55rem; }
-        .multi-indicator .slider-container { width: 5.5rem; }
-        #menu-content ul li.spacer { color: #aaa; font-weight: 700; font-style: normal; justify-content: center; font-size: 0.75rem; text-transform: uppercase; padding: 0.3rem 0.85rem; pointer-events: none; background-color: transparent; display: flex; align-items: center; gap: 0.75rem; margin: 0.15rem 0; }
-        #menu-content ul li.spacer::before, #menu-content ul li.spacer::after { content: ''; flex-grow: 1; height: 1px; background: rgba(170, 170, 170, 0.3); }
-        .info-frame { width: 12rem; background-color: rgba(19, 19, 23, 0.8); border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; transition: opacity 0.3s ease, transform 0.3s ease; }
-        .info-frame .header { display: flex; align-items: center; background-color: var(--main-color); padding: 0.2rem 0.4rem; }
-        .info-frame .header img { width: 0.7rem; height: 0.7rem; margin-right: 0.4rem; filter: brightness(0) invert(1); }
-        .info-frame .header span { font-size: 0.7rem; font-weight: normal; color: #FFFFFF; text-transform: uppercase; }
-        .info-frame .content { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.4rem 0.5rem; }
-        .info-frame .content span { font-size: 0.7rem; color: #FFFFFF; font-weight: normal; }
-        #serverinfo-frame { position: fixed; top: 25%; left: calc(30px + 25rem + 1rem); transform: translateY(-50%); width: 15rem; }
-        #keybinds-frame { position: fixed; top: 40%; left: calc(30px + 25rem + 1rem); transform: translateY(-50%); }
-        #spectators-frame { position: fixed; top: 55%; left: calc(30px + 25rem + 1rem); transform: translateY(-50%); }
-
-        #playerinfo-frame { position: fixed; top: 45%; left: calc(30px + 25rem + 1rem); transform: translateY(-50%); width: 18rem; background-color: rgba(19, 19, 23, 0.9); border-radius: 0.75rem; border-top: 2px solid var(--main-color); overflow: hidden; color: #ffffff; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); transition: opacity 0.3s ease, transform 0.3s ease; }
-        #playerinfo-frame .header { background-color: rgba(10, 10, 10, 0.8); padding: 0.5rem 0.8rem; font-size: 0.9rem; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 0.6rem; }
-        #playerinfo-frame .header img { width: 1.1rem; height: 1.1rem; filter: brightness(0) invert(1); }
-        #playerinfo-frame .content { padding: 0.8rem; display: flex; flex-direction: column; gap: 0.6rem; }
-        #playerinfo-frame .content .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        #playerinfo-frame .content .info-row:last-child { border-bottom: none; padding-bottom: 0; }
-        #playerinfo-frame .content .info-label { font-weight: 400; color: #aaa; }
-        #playerinfo-frame .content .info-value { font-weight: 700; color: #fff; text-align: right; }
-
-        #set-keybind-frame, #input-box-frame, #feature-desc-frame { position: fixed; bottom: 30px; left: 50%; z-index: 10001; opacity: 0; transform: translate(-50%, 200px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-        #set-keybind-frame { width: 20rem; }
-        #input-box-frame { width: 25rem; }
-        #feature-desc-frame { width: 18rem; }
-        #feature-desc-frame .header span { font-weight: 700; }
-        #feature-desc-frame .content { padding: 0.8rem; text-align: center; }
-        #feature-desc-frame .content span { font-size: 0.9rem; line-height: 1.5; color: #ddd; }
-        #set-keybind-frame.show, #input-box-frame.show, #feature-desc-frame.show { opacity: 1; transform: translate(-50%, 0); }
-        #set-keybind-frame .content { padding: 0.2rem 0.5rem; text-align: center; }
-        #set-keybind-frame .content span { font-size: 1rem; font-weight: normal; }
-        #input-box-frame .content { padding: 0.5rem 0.8rem; text-align: left; background-color: rgba(10,10,10,0.8); min-height: 2.5rem; }
-        #input-box-frame .content span { font-size: 1rem; font-weight: normal; white-space: pre-wrap; word-wrap: break-word; }
-        #input-box-text::after { content: '_'; animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        #color-picker-panel { position: fixed; top: 45%; left: calc(30px + 25rem + 1rem); width: 15rem; transform: translate(100vw, -50%); z-index: 999; transition: transform 0.4s ease-in-out; }
-        #color-picker-panel.show { transform: translate(0, -50%); }
-        #color-picker-panel .content { gap: 0.5rem; padding: 0.6rem; }
-        .color-picker-info { font-size: 0.7rem; text-align: center; opacity: 0.8; }
-        .color-channel-wrapper { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.5rem; border-radius: 0.4rem; background-color: rgba(255,255,255,0.05); transition: background-color 0.2s ease, box-shadow 0.2s ease; }
-        .color-channel-wrapper.selected { background-color: rgba(255,255,255,0.15); }
-        .color-channel-label { font-weight: bold; width: 1rem; }
-        .color-channel-bar { flex-grow: 1; height: 0.5rem; background-color: rgba(0,0,0,0.3); border-radius: 0.5rem; overflow: hidden; }
-        .color-channel-fill { height: 100%; width: 0%; border-radius: 0.5rem; transition: width 0.1s linear; }
-        #color-picker-r .color-channel-fill { background-color: #E53E3E; }
-        #color-picker-g .color-channel-fill { background-color: #48BB78; }
-        #color-picker-b .color-channel-fill { background-color: #3B82F6; }
-        .color-channel-value { font-size: 0.8rem; font-weight: 500; width: 2rem; text-align: right; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(calc(100% + 20px)); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(calc(100% + 20px)); opacity: 0; } }
-        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
-        @keyframes smoothFadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOutDown { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(10px); } }
-        #menu-content ul li.animate-in { opacity: 0; animation: smoothFadeInUp 0.25s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
-        #menu-content ul li.animate-out { animation: fadeOutDown 0.15s ease-in forwards; }
-        
-        #notification-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 10003; }
-        .notification { display: flex; flex-direction: column; width: 18rem; background-color: var(--main-color); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; overflow: hidden; animation: slideIn 0.5s ease-out forwards; position: relative; box-shadow: 0 0 10px var(--main-color-shadow); --notification-color: #3B82F6; }
-        .notification.leaving { animation: slideOut 0.5s ease-in forwards; }
-        .notification-header { display: flex; align-items: center; padding: 0.4rem 0.6rem; background-color: rgba(10, 10, 10, 0.9); border-bottom: 1px solid var(--notification-color); }
-        .notification-logo { height: 1rem; width: auto; margin-right: 0.5rem; filter: brightness(0) invert(1); }
-        .notification-title { font-size: 0.8rem; font-weight: 700; color: #fff; }
-        .notification-body { padding: 0.6rem; }
-        .notification-desc { font-size: 0.75rem; color: #ccc; line-height: 1.3; }
-        .notification-timer { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: var(--notification-color); animation-name: shrink; animation-timing-function: linear; animation-fill-mode: forwards; }
-
-        #esp-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; overflow: hidden; }
-        .esp-element { position: absolute; transform: translate(-50%, -50%); color: white; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 1px -1px 2px black, -1px 1px 2px black; }
-        .esp-box-normal, .esp-box-corner { position: absolute; border: 1px solid white; box-sizing: border-box; }
-        .esp-box-corner { border: 0; }
-        .esp-box-corner::before, .esp-box-corner::after { content: ''; position: absolute; width: 20%; height: 20%; border-style: solid; border-color: white; box-sizing: border-box; }
-        .esp-box-corner::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
-        .esp-box-corner::after { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
-        .esp-box-img { position: absolute; object-fit: contain; }
-        .esp-name { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; padding-bottom: 2px; }
-        .esp-healthbar-container { position: absolute; left: -7px; top: 0; height: 100%; width: 4px; background-color: rgba(0,0,0,0.8); border: 1px solid black; }
-        .esp-healthbar-fill { position: absolute; bottom: 0; width: 100%; background-color: #4CAF50; }
-        #debug-frame { position: fixed; bottom: 10px; right: 10px; width: 25rem; z-index: 10002; }
-        #debug-content { max-height: 15rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--main-color) rgba(10, 10, 10, 0.9); }
-        #debug-content::-webkit-scrollbar { width: 8px; }
-        #debug-content::-webkit-scrollbar-track { background: rgba(10, 10, 10, 0.1); }
-        #debug-content::-webkit-scrollbar-thumb { background-color: var(--main-color); border-radius: 4px; }
-        .dark-theme-active #menu-content ul li.active { border: 1px solid rgba(255, 255, 255, 0.2); }
-        .dark-theme-active .info-frame .header { border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
-        .dark-theme-active #sub-header .selection-bar { background: linear-gradient(to top, rgba(220, 220, 220, 0.5), transparent); }
-        .dark-theme-active .toggle-switch.toggled { border: 1px solid rgba(255, 255, 255, 0.2); }
-        
-        .player-flags-container { display: inline-flex; align-items: center; vertical-align: middle; margin-left: 8px; gap: 5px; }
-        .flag-tag { background-color: #333; color: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; line-height: 1; }
-        .flag-vehicle { background-color: #E53E3E; }
-        .flag-interior { background-color: #3B82F6; }
-        .flag-falling { background-color: #DD6B20; }
-        .flag-invisible { background-color: #48BB78; color: #121212; }
-        
-        .hidden-by-keybind-setter { opacity: 0 !important; pointer-events: none !important; transform: scale(0.95) !important; }
-        
-        /* -- FIX START: Rounded Rainbow Borders (Corrected Border-Only Effect) -- */
-        .rainbow-borders .menu-top,
-        .rainbow-borders .menu-bottom,
-        .rainbow-borders .info-frame,
-        .rainbow-borders #playerinfo-frame {
-            position: relative;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            z-index: 1;
+        #menu {
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            width: 400px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            display: none;
         }
-
-        .rainbow-borders .menu-top::before,
-        .rainbow-borders .menu-bottom::before,
-        .rainbow-borders .info-frame::before,
-        .rainbow-borders #playerinfo-frame::before {
-            content: '';
-            position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            border-radius: inherit;
-            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
-            background-size: 200% 200%;
-            animation: rainbow-glow 3s linear infinite;
-            z-index: -1;
-        }
-
-        /* **THIS IS THE CRITICAL FIX:** These highly specific rules override the default semi-transparent backgrounds,
-          making them solid ONLY when the rainbow border is active. This ensures the 
-          gradient is only visible in the border area.
-        */
-        body.rainbow-borders .menu-top,
-        body.rainbow-borders .menu-bottom {
-            background-color: rgb(15, 15, 15); /* From rgba(15,15,15,0.8) to solid */
-        }
-        body.rainbow-borders .info-frame {
-            background-color: rgb(19, 19, 23); /* From rgba(19,19,23,0.8) to solid */
-        }
-        body.rainbow-borders #playerinfo-frame {
-            background-color: rgb(19, 19, 23); /* From rgba(19,19,23,0.9) to solid */
-        }
-        /* -- FIX END: Rounded Rainbow Borders (Corrected Border-Only Effect) -- */
-
-        /* -- ADDITION START: Chroma Text for "Ynxni" -- */
-        @keyframes chroma-text-glow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .chroma-text-ynxni {
-            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
-            background-size: 400% 400%;
-            animation: chroma-text-glow 6s linear infinite;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        
+        .header {
+            background: rgba(255, 0, 255, 0.3);
+            padding: 10px;
+            text-align: center;
             font-weight: bold;
-            display: inline-block;
+            border-bottom: 1px solid #ff00ff;
         }
-        /* -- ADDITION END: Chroma Text for "Ynxni" -- */
+        
+        .menu-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-item.active {
+            background: rgba(255, 0, 255, 0.2);
+        }
+        
+        .toggle {
+            width: 50px;
+            height: 25px;
+            background: #333;
+            border-radius: 25px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .toggle.on {
+            background: #00ff00;
+        }
+        
+        .toggle-knob {
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+        
+        .toggle.on .toggle-knob {
+            left: 27px;
+        }
+        
+        .category {
+            background: rgba(255, 0, 255, 0.4);
+            padding: 8px 15px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div id="watermark" style="display: none;">
-        <div class="watermark-content">
-            <img src="Img/Logo.png" alt="Logo">
-            <div class="watermark-text">
-                <span>Clara.wtf</span>
-                <span class="watermark-author">by Ziggy</span>
-            </div>
-        </div>
-        <div class="watermark-bar"></div>
-    </div>
-    <div id="mod-menu">
-        <div class="menu-top">
-            <div id="banner-container">
-                <img class="banner" src="Img/Banner2.png" alt="Menu Banner">
-            </div>
-            <div id="sub-header" style="display: none;"></div>
-        </div>
-        <div class="menu-bottom">
-            <div id="menu-content"><ul></ul></div>
-            <div class="menu-footer">
-                <span>Clara.wtf | 2.0.5</span>
-                <span>Discord.gg/Clara</span>
-            </div>
+    <div id="menu">
+        <div class="header">SIMPLE MENU - INSERT TO TOGGLE</div>
+        <div id="menu-content">
+            <!-- Menu content will be filled by LUA -->
         </div>
     </div>
-    <div class="info-frame" id="serverinfo-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Player.png" alt="Server Info">
-            <span>Server Info</span>
-        </div>
-        <div class="content">
-            <span>Connecting...</span>
-        </div>
-    </div>
-    <div class="info-frame" id="keybinds-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Keybinds.png" alt="Keybinds">
-            <span>Keybinds</span>
-        </div>
-        <div class="content">
-            <span>No active keybinds.</span>
-        </div>
-    </div>
-    <div class="info-frame" id="spectators-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Spectator.png" alt="Spectators">
-            <span>Spectators</span>
-        </div>
-        <div class="content">
-            <span>No spectators.</span>
-        </div>
-    </div>
-    <div id="playerinfo-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Player.png" alt="Player Info">
-            <span>Player Info</span>
-        </div>
-        <div class="content">
-        </div>
-    </div>
-    <div class="info-frame" id="feature-desc-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Player.png" alt="Feature Description">
-            <span>Feature Info</span>
-        </div>
-        <div class="content">
-            <span id="feature-desc-text">Description will appear here.</span>
-        </div>
-    </div>
-    <div class="info-frame" id="set-keybind-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Keybinds.png" alt="Keybinds">
-            <span>Select a Keybind</span>
-        </div>
-        <div class="content">
-            <span id="keybind-prompt-key">Press any key...</span>
-        </div>
-    </div>
-    <div class="info-frame" id="input-box-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Keybinds.png" alt="Input">
-            <span id="input-box-title">Input</span>
-        </div>
-        <div class="content">
-            <span id="input-box-text"></span>
-        </div>
-    </div>
-    <div class="info-frame" id="color-picker-panel" style="display: none;">
-        <div class="header">
-            <img src="Img/Keybinds.png" alt="Color Picker">
-            <span>Color Picker</span>
-        </div>
-        <div class="content">
-            <div id="color-picker-preview" style="width: 100%; height: 2.5rem; border-radius: 0.5rem; border: 1px solid #fff; margin-bottom: 0.2rem;"></div>
-            <div id="color-picker-r" class="color-channel-wrapper">
-                <span class="color-channel-label">R</span>
-                <div class="color-channel-bar"><div class="color-channel-fill"></div></div>
-                <span class="color-channel-value">0</span>
-            </div>
-            <div id="color-picker-g" class="color-channel-wrapper">
-                <span class="color-channel-label">G</span>
-                <div class="color-channel-bar"><div class="color-channel-fill"></div></div>
-                <span class="color-channel-value">0</span>
-            </div>
-            <div id="color-picker-b" class="color-channel-wrapper">
-                <span class="color-channel-label">B</span>
-                <div class="color-channel-bar"><div class="color-channel-fill"></div></div>
-                <span class="color-channel-value">0</span>
-            </div>
-             <span class="color-picker-info">Up/Down to select, Left/Right to change.</span>
-        </div>
-    </div>
-    <div class="info-frame" id="debug-frame" style="display: none;">
-        <div class="header">
-            <img src="Img/Player.png" alt="Debug Log">
-            <span>Debug Log</span>
-        </div>
-        <div class="content" id="debug-content">
-        </div>
-    </div>
-    <div id="notification-container"></div>
-    
+
     <script>
-        let hasAudioStarted = false;
-        let audioContext, audioSource, analyser, gainNode;
-        let animationFrameId;
-        const songPreview = document.getElementById('song-preview');
-        const albumArt = document.getElementById('album-art');
-        const songTitle = document.getElementById('song-title');
-        
-        async function playLoadingMusic() {
-            if (hasAudioStarted) return;
-            hasAudioStarted = true;
-            try {
-                const response = await fetch('?action=get_songs');
-                const songs = await response.json();
-                if (songs && songs.length > 0) {
-                    const randomSong = songs[Math.floor(Math.random() * songs.length)];
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    analyser = audioContext.createAnalyser();
-                    analyser.fftSize = 256;
-                    gainNode = audioContext.createGain();
-                    gainNode.gain.value = 0.15;
-                    const audioDataResponse = await fetch(randomSong.file);
-                    const arrayBuffer = await audioDataResponse.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    audioSource = audioContext.createBufferSource();
-                    audioSource.buffer = audioBuffer;
-                    audioSource.connect(analyser);
-                    analyser.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    audioSource.start(0);
-                    albumArt.src = randomSong.image;
-                    songTitle.textContent = randomSong.title;
+        let currentSelection = 0;
+        let menuData = [];
+        let menuVisible = false;
 
-                    const musicElements = document.getElementById('music-elements');
-                    if (musicElements) {
-                        musicElements.style.display = 'flex';
-                        setTimeout(() => { musicElements.style.opacity = '1'; }, 50);
-                    }
-                    startBassAnimation();
-                }
-            } catch (error) {
-                console.error("Failed to fetch or play song:", error);
-            }
-        }
-        
-        function updateVehicleItems(newItems) {
-            if (!isTopLevel && fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.name === 'Vehicles') {
-                const currentItems = fullMenuData[categorySelectionIndex].content[subCategoryIndex].items;
-                let previouslySelectedItemTitle = null;
-                if (currentItems && itemSelectionIndex >= 0 && itemSelectionIndex < currentItems.length) {
-                    previouslySelectedItemTitle = currentItems[itemSelectionIndex].TITLE;
-                }
-                fullMenuData[categorySelectionIndex].content[subCategoryIndex].items = newItems;
-                let newIndex = -1;
-                if (previouslySelectedItemTitle) {
-                    newIndex = newItems.findIndex(item => item.TITLE === previouslySelectedItemTitle);
-                }
-                if (newIndex !== -1) {
-                    itemSelectionIndex = newIndex;
-                } else {
-                    if (itemSelectionIndex >= newItems.length) {
-                        itemSelectionIndex = 0;
-                        let guard = 0;
-                        while(newItems.length > 0 && newItems[itemSelectionIndex] && newItems[itemSelectionIndex].TYPE === "Spacer" && guard < newItems.length) {
-                            itemSelectionIndex++;
-                            guard++;
-                        }
-                    }
-                }
-                renderItemList(newItems, false);
-            }
-        }
-        
-        function startBassAnimation() {
-            const canvas = document.getElementById('audio-visualizer');
-            if (!canvas) return;
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            const canvasCtx = canvas.getContext('2d');
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            const mainColor = '#ff6600';
-            function renderFrame() {
-                animationFrameId = requestAnimationFrame(renderFrame);
-                analyser.getByteFrequencyData(dataArray);
-                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-                const barCount = 32; 
-                const barWidth = (canvas.width / barCount) - 2;
-                let barHeight;
-                let x = 0;
-                for (let i = 0; i < barCount; i++) {
-                    barHeight = dataArray[i] * (canvas.height / 255);
-                    canvasCtx.fillStyle = mainColor;
-                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    x += barWidth + 2;
-                }
-            }
-            renderFrame();
-        }
-        
-        function cleanupAudio() {
-            if (audioSource) {
-                try { audioSource.stop(); } catch(e) {}
-            }
-            if (audioContext && audioContext.state !== 'closed') {
-                audioContext.close();
-            }
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-        }
-
-        function fadeOutMusicAndScreen(durationSeconds) {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            if (gainNode && audioContext) {
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + durationSeconds);
-            }
-            if (loadingOverlay) {
-                loadingOverlay.classList.add('closing');
-                loadingOverlay.classList.add('hidden');
-            }
-            setTimeout(() => {
-                cleanupAudio();
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-                document.getElementById('mod-menu').style.display = 'flex';
-            }, durationSeconds * 1000 + 500);
-        }
-
-        let fullMenuData = [];
-        let itemSelectionIndex = 0;
-        let subCategoryIndex = 0;
-        let categorySelectionIndex = 0;
-        let isTopLevel = true;
-        let currentPlayerInfo = null;
-        let uiOffsets = {
-            keybinds: { x: 0, y: 0 },
-            spectators: { x: 0, y: 0 },
-            serverinfo: { x: 0, y: 0 }
-        };
-        let configuredMaxHeight = '30rem';
-        const draggableFrames = ['serverinfo', 'keybinds', 'spectators'];
-        const snapThreshold = 15;
-
-        function updatePlayerInfoVisibility() {
-            const playerInfoFrame = document.getElementById('playerinfo-frame');
-            if (!playerInfoFrame) return;
+        // Handle messages from LUA
+        window.addEventListener('message', function(event) {
+            const data = event.data;
             
-            const isInPlayerTab = !isTopLevel && fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.name === 'Players';
-            
-            if (currentPlayerInfo && isInPlayerTab) {
-                 playerInfoFrame.style.display = 'block';
-            } else {
-                 playerInfoFrame.style.display = 'none';
+            if (data.action === 'showMenu') {
+                document.getElementById('menu').style.display = 'block';
+                menuVisible = true;
+                updateSelection();
             }
-        }
-
-        function applyTransform(elementId, frame) {
-            let newX = uiOffsets[elementId].x;
-            let newY = uiOffsets[elementId].y;
-            frame.style.transform = `translateY(-50%) translate(${newX}px, ${newY}px)`;
-            const movingRect = frame.getBoundingClientRect();
-            for (const otherElementId of draggableFrames) {
-                if (otherElementId === elementId) continue;
-                const otherFrame = document.getElementById(`${otherElementId}-frame`);
-                if (otherFrame && otherFrame.style.display !== 'none') {
-                    const otherRect = otherFrame.getBoundingClientRect();
-                    let snapped = false;
-                    if (Math.abs(movingRect.bottom - otherRect.top) < snapThreshold) {
-                        newY += otherRect.top - movingRect.bottom;
-                        snapped = true;
-                    } else if (Math.abs(movingRect.top - otherRect.bottom) < snapThreshold) {
-                        newY += otherRect.bottom - movingRect.top;
-                        snapped = true;
-                    } else if (Math.abs(movingRect.top - otherRect.top) < snapThreshold) {
-                        newY += otherRect.top - movingRect.top;
-                        snapped = true;
-                    }
-                    if (Math.abs(movingRect.left - otherRect.right) < snapThreshold) {
-                        newX += otherRect.right - movingRect.left;
-                        snapped = true;
-                    } else if (Math.abs(movingRect.right - otherRect.left) < snapThreshold) {
-                        newX += otherRect.left - movingRect.right;
-                        snapped = true;
-                    } else if (Math.abs(movingRect.left - otherRect.left) < snapThreshold) {
-                        newX += otherRect.left - movingRect.left;
-                        snapped = true;
-                    }
-                    if (snapped) {
-                        uiOffsets[elementId].x = newX;
-                        uiOffsets[elementId].y = newY;
-                        frame.style.transform = `translateY(-50%) translate(${newX}px, ${newY}px)`;
-                        return;
-                    }
+            else if (data.action === 'hideMenu') {
+                document.getElementById('menu').style.display = 'none';
+                menuVisible = false;
+            }
+            else if (data.action === 'updateMenu') {
+                menuData = data.menuData;
+                renderMenu();
+            }
+            else if (data.action === 'navigate') {
+                if (data.direction === 'up') {
+                    currentSelection = Math.max(0, currentSelection - 1);
+                } else if (data.direction === 'down') {
+                    currentSelection = Math.min(menuData.length - 1, currentSelection + 1);
                 }
+                updateSelection();
             }
-            frame.style.transform = `translateY(-50%) translate(${newX}px, ${newY}px)`;
-        }
-
-        function setMenuColor(r, g, b) {
-            document.documentElement.style.setProperty('--main-color', `rgba(${r}, ${g}, ${b}, 1)`);
-            document.documentElement.style.setProperty('--main-color-transparent', `rgba(${r}, ${g}, ${b}, 0.7)`);
-            document.documentElement.style.setProperty('--main-color-shadow', `rgba(${r}, ${g}, ${b}, 0.5)`);
-            const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-            if (luminance < 25) {
-                document.body.classList.add('dark-theme-active');
-            } else {
-                document.body.classList.remove('dark-theme-active');
-            }
-        }
-        
-        function normalizeData(data) {
-            const normalized = Array.isArray(data) ? data : Object.values(data);
-            normalized.forEach(category => {
-                if (category.content && typeof category.content === 'object') {
-                    category.content = Array.isArray(category.content) ? category.content : Object.values(category.content);
-                    category.content.forEach(sub => {
-                        if (sub.items && typeof sub.items === 'object') {
-                            sub.items = Array.isArray(sub.items) ? sub.items : Object.values(sub.items);
-                        }
+            else if (data.action === 'select') {
+                const item = menuData[currentSelection];
+                if (item && item.type === 'toggle') {
+                    // Toggle the item
+                    item.value = !item.value;
+                    
+                    // Send back to LUA
+                    fetch(`https://${GetParentResourceName()}/menuToggle`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            toggleName: item.toggleName,
+                            state: item.value
+                        })
                     });
-                }
-            });
-            return normalized;
-        }
-
-        function generateFlagTags(flags) {
-            if (!flags) return '';
-            let tagsHtml = '';
-            if (flags.inVehicle) tagsHtml += `<span class="flag-tag flag-vehicle">Vehicle</span>`;
-            if (flags.inInterior) tagsHtml += `<span class="flag-tag flag-interior">Indoors</span>`;
-            if (flags.isFalling) tagsHtml += `<span class="flag-tag flag-falling">Falling</span>`;
-            if (flags.isInvisible) tagsHtml += `<span class="flag-tag flag-invisible">Invisible</span>`;
-            return tagsHtml ? `<span class="player-flags-container">${tagsHtml}</span>` : '';
-        }
-
-        // -- FIX: Function to dynamically apply chroma effect to "Ynxni" text, now globally used --
-        function applyChromaToYnxni(container) {
-            const elements = container.querySelectorAll("span");
-            elements.forEach(el => {
-                // Check if the element contains the text but not already the chroma span to avoid re-wrapping
-                if (el.innerText.toLowerCase().includes('ynxni') && !el.querySelector('.chroma-text-ynxni')) {
-                     el.innerHTML = el.innerHTML.replace(/(Ynxni)/gi, '<span class="chroma-text-ynxni">$1</span>');
-                }
-            });
-        }
-        
-        window.addEventListener("message", function(event) {
-            if (!hasAudioStarted) {
-                playLoadingMusic();
-            }
-            let receivedData;
-            if (typeof event.data === 'object' && event.data !== null) {
-                receivedData = event.data;
-            } else if (typeof event.data === 'string') {
-                try { receivedData = JSON.parse(event.data); } catch (e) { return; }
-            } else { return; }
-
-            if (receivedData.loadingUpdate) {
-                const { text, progress } = receivedData.loadingUpdate;
-                document.getElementById('loading-text').textContent = text;
-                if (progress !== undefined) {
-                    document.getElementById('progress-bar').style.width = `${progress}%`;
-                }
-            }
-            if (receivedData.action === 'loadingComplete') {
-                fadeOutMusicAndScreen(1.5);
-            }
-            if (receivedData.action === 'toggleMenu') {
-                const menu = document.getElementById('mod-menu');
-                const isOpening = receivedData.value;
-                if (window.menuCloseTimeout) {
-                    clearTimeout(window.menuCloseTimeout);
-                }
-                if (isOpening) {
-                    menu.classList.remove('closed');
-                    const currentItems = isTopLevel ? fullMenuData : fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.items;
-                    renderItemList(currentItems, true);
-                    updateFeatureDescription();
-                } else {
-                    const descFrame = document.getElementById('feature-desc-frame');
-                    descFrame.classList.remove('show');
-                    setTimeout(() => { descFrame.style.display = 'none'; }, 300);
-                    const items = document.querySelectorAll('#menu-content ul li');
-                    let maxDelay = 0;
-                    if (items.length > 0) {
-                        items.forEach((item, index) => {
-                            const delay = (items.length - 1 - index) * 0.02;
-                            item.classList.remove('animate-in');
-                            item.classList.add('animate-out');
-                            item.style.animationDelay = `${delay}s`;
-                            if (delay > maxDelay) maxDelay = delay;
-                        });
-                    }
-                    window.menuCloseTimeout = setTimeout(() => {
-                        menu.classList.add('closed');
-                    }, maxDelay * 1000 + 150);
-                }
-            }
-            if (receivedData.action === 'updateVehicleItems') {
-                updateVehicleItems(receivedData.items);
-            }
-            if (receivedData.action === 'showKeybindSetter') {
-                const frame = document.getElementById('set-keybind-frame');
-                document.getElementById('keybind-prompt-key').textContent = "Press any key...";
-                frame.style.display = 'block';
-                setTimeout(() => frame.classList.add('show'), 10);
-                document.querySelectorAll('#mod-menu, .info-frame:not(#set-keybind-frame), #playerinfo-frame, #feature-desc-frame').forEach(el => el.classList.add('hidden-by-keybind-setter'));
-            }
-            if (receivedData.action === 'hideKeybindSetter') {
-                const frame = document.getElementById('set-keybind-frame');
-                frame.classList.remove('show');
-                setTimeout(() => frame.style.display = 'none', 300);
-                document.querySelectorAll('#mod-menu, .info-frame:not(#set-keybind-frame), #playerinfo-frame, #feature-desc-frame').forEach(el => el.classList.remove('hidden-by-keybind-setter'));
-            }
-            if (receivedData.action === 'showInputBox') {
-                const frame = document.getElementById('input-box-frame');
-                document.getElementById('input-box-title').textContent = receivedData.title;
-                document.getElementById('input-box-text').textContent = receivedData.text;
-                frame.style.display = 'block';
-                setTimeout(() => frame.classList.add('show'), 10);
-            }
-            if (receivedData.action === 'hideInputBox') {
-                const frame = document.getElementById('input-box-frame');
-                frame.classList.remove('show');
-                setTimeout(() => frame.style.display = 'none', 300);
-            }
-            if (receivedData.action === 'updateInputBox') {
-                document.getElementById('input-box-text').textContent = receivedData.text;
-            }
-            if (receivedData.action === 'showColorPicker') {
-                const frame = document.getElementById('color-picker-panel');
-                updateColorPickerUI(receivedData.color.r, receivedData.color.g, receivedData.color.b);
-                updateColorPickerSelection(receivedData.selection);
-                frame.style.display = 'block';
-                setTimeout(() => frame.classList.add('show'), 10);
-            }
-            if (receivedData.action === 'hideColorPicker') {
-                const frame = document.getElementById('color-picker-panel');
-                frame.classList.remove('show');
-                setTimeout(() => frame.style.display = 'none', 400);
-            }
-            if (receivedData.action === 'updateKeybindSelection') {
-                document.getElementById('keybind-prompt-key').textContent = receivedData.key;
-            }
-            if (receivedData.action === 'updateSpecificItem') {
-                const { cat, sub, item, itemData } = receivedData;
-                updateSpecificItem(cat, sub, item, itemData);
-            }
-            if (receivedData.action === 'updateBanner') {
-                const file = receivedData.file;
-                const container = document.getElementById('banner-container');
-                
-                if (file.includes('HoodlumsByYnxni.png')) {
-                    document.body.classList.add('rainbow-borders');
-                } else {
-                    document.body.classList.remove('rainbow-borders');
-                }
-
-                container.style.maxHeight = '0';
-                setTimeout(() => {
-                    container.innerHTML = '';
-                    let element;
-                    if (file.endsWith('.mp4')) {
-                        element = document.createElement('video');
-                        element.src = file;
-                        element.autoplay = true;
-                        element.muted = true;
-                        element.loop = true;
-                        element.onloadeddata = () => { container.style.maxHeight = '10.7rem'; };
-                    } else {
-                        element = document.createElement('img');
-                        element.src = file;
-                        element.onload = () => { container.style.maxHeight = '10.7rem'; };
-                    }
-                    element.alt = "Menu Banner";
-                    container.appendChild(element);
-                }, 400);
-            }
-            if (receivedData.uiAction === 'updateKeybinds') {
-                const contentDiv = document.querySelector('#keybinds-frame .content');
-                let html = '';
-                if (receivedData.keybinds && receivedData.keybinds.length > 0) {
-                    receivedData.keybinds.forEach(kbString => { html += `<span>${kbString}</span>`; });
-                } else {
-                    html += '<span>No active keybinds.</span>';
-                }
-                contentDiv.innerHTML = html;
-                applyChromaToYnxni(contentDiv);
-            }
-            if (receivedData.uiAction === 'updateSpectators') {
-                const contentDiv = document.querySelector('#spectators-frame .content');
-                let html = '';
-                if (receivedData.spectators && receivedData.spectators.length > 0) {
-                    receivedData.spectators.forEach(specString => { html += `<span>${specString}</span>`; });
-                } else {
-                    html += '<span>No spectators.</span>';
-                }
-                contentDiv.innerHTML = html;
-                applyChromaToYnxni(contentDiv);
-            }
-            if (receivedData.uiAction === 'updatePlayerInfo') {
-                const contentDiv = document.querySelector('#playerinfo-frame .content');
-                let html = '';
-                if (receivedData.info) {
-                    currentPlayerInfo = receivedData.info;
-                    const info = receivedData.info;
-                    html += `<div class="info-row"><span class="info-label">Name</span><span class="info-value">${info.name}</span></div>`;
-                    html += `<div class="info-row"><span class="info-label">Server ID</span><span class="info-value">${info.serverId}</span></div>`;
-                    html += `<div class="info-row"><span class="info-label">Health</span><span class="info-value">${info.health}</span></div>`;
-                    html += `<div class="info-row"><span class="info-label">Armour</span><span class="info-value">${info.armour}</span></div>`;
-                    html += `<div class="info-row"><span class="info-label">Model</span><span class="info-value">${info.model}</span></div>`;
-                    html += `<div class="info-row"><span class="info-label">Vehicle</span><span class="info-value">${info.vehicle}</span></div>`;
-                } else {
-                    currentPlayerInfo = null;
-                    html = '<span>No player selected.</span>';
-                }
-                contentDiv.innerHTML = html;
-                updatePlayerInfoVisibility();
-                applyChromaToYnxni(contentDiv);
-            }
-            if (receivedData.uiAction === 'updateServerInfo') {
-                const contentDiv = document.querySelector('#serverinfo-frame .content');
-                let html = '';
-                if (receivedData.info) {
-                    const info = receivedData.info;
-                    html += `<span>IP: ${info.ip}</span>`;
-                    html += `<span>Server: ${info.server}</span>`;
-                    html += `<span>Anti-Cheat: ${info.ac}</span>`;
-                } else {
-                    html = '<span>N/A</span>';
-                }
-                contentDiv.innerHTML = html;
-                applyChromaToYnxni(contentDiv);
-            }
-            if (receivedData.action === 'updateEsp') {
-                const container = document.getElementById('esp-container');
-                const { data, settings } = receivedData;
-                container.innerHTML = '';
-                if (data && data.length > 0) {
-                    data.forEach(p => {
-                        const espWrapper = document.createElement('div');
-                        espWrapper.className = 'esp-element';
-                        espWrapper.style.left = `${p.x * 100}%`;
-                        espWrapper.style.top = `${p.y * 100}%`;
-                        espWrapper.style.width = `${p.w * 100}%`;
-                        espWrapper.style.height = `${p.h * 100}%`;
-                        if (settings.box) {
-                            if (settings.boxType === 3) {
-                                const img = document.createElement('img');
-                                img.className = 'esp-box-img';
-                                img.src = 'Img/Rick.png';
-                                img.style.width = '100%';
-                                img.style.height = '100%';
-                                espWrapper.appendChild(img);
-                            } else if (settings.boxType === 4) {
-                                const img = document.createElement('img');
-                                img.className = 'esp-box-img';
-                                img.src = 'Img/Shrek.png';
-                                img.style.width = '100%';
-                                img.style.height = '100%';
-                                espWrapper.appendChild(img);
-                            } else {
-                                const box = document.createElement('div');
-                                box.className = settings.boxType === 1 ? 'esp-box-normal' : 'esp-box-corner';
-                                box.style.width = '100%';
-                                box.style.height = '100%';
-                                espWrapper.appendChild(box);
-                            }
-                        }
-                        if (settings.name) {
-                            const name = document.createElement('span');
-                            name.className = 'esp-name';
-                            name.textContent = p.name;
-                            espWrapper.appendChild(name);
-                        }
-                        if (settings.health) {
-                            const healthBarContainer = document.createElement('div');
-                            healthBarContainer.className = 'esp-healthbar-container';
-                            const healthFill = document.createElement('div');
-                            healthFill.className = 'esp-healthbar-fill';
-                            const healthPercent = (p.health / p.maxHealth) * 100;
-                            healthFill.style.height = `${healthPercent}%`;
-                            if(healthPercent < 25) {
-                                healthFill.style.backgroundColor = '#E53E3E';
-                            } else if (healthPercent < 60) {
-                                healthFill.style.backgroundColor = '#DD6B20';
-                            } else {
-                                healthFill.style.backgroundColor = '#48BB78';
-                            }
-                            healthBarContainer.appendChild(healthFill);
-                            espWrapper.appendChild(healthBarContainer);
-                        }
-                        container.appendChild(espWrapper);
-                    });
-                }
-            }
-            if (receivedData.action === 'clearEsp') {
-                document.getElementById('esp-container').innerHTML = '';
-            }
-            if (receivedData.action === 'toggleDebug') {
-                document.getElementById('debug-frame').style.display = receivedData.value ? 'block' : 'none';
-            }
-            if (receivedData.action === 'debugLog') {
-                const content = document.getElementById('debug-content');
-                if (content) {
-                    const logEntry = document.createElement('span');
-                    logEntry.textContent = receivedData.message;
-                    content.appendChild(logEntry);
-                    content.scrollTop = content.scrollHeight;
-                }
-            }
-            if (receivedData.action === 'updateSubMenuItems') {
-                const { cat, sub, items } = receivedData;
-                if (fullMenuData[cat] && fullMenuData[cat].content[sub]) {
-                    let previouslySelectedItemTitle = null;
-                    const isCurrentlyViewing = !isTopLevel && categorySelectionIndex === cat && subCategoryIndex === sub;
-                    if (isCurrentlyViewing) {
-                        const currentItems = fullMenuData[cat].content[sub].items;
-                        if (currentItems && itemSelectionIndex >= 0 && itemSelectionIndex < currentItems.length) {
-                            previouslySelectedItemTitle = currentItems[itemSelectionIndex].TITLE;
-                        }
-                    }
-                    fullMenuData[cat].content[sub].items = items;
-                    if (isCurrentlyViewing) {
-                        let newIndex = -1;
-                        if (previouslySelectedItemTitle) {
-                            newIndex = items.findIndex(item => item.TITLE === previouslySelectedItemTitle);
-                        }
-                        if (newIndex !== -1) {
-                            itemSelectionIndex = newIndex;
-                        } else {
-                           if (itemSelectionIndex >= items.length) {
-                                itemSelectionIndex = 0;
-                                let guard = 0;
-                                while(items.length > 0 && items[itemSelectionIndex] && items[itemSelectionIndex].TYPE === "Spacer" && guard < items.length) {
-                                    itemSelectionIndex++;
-                                    guard++;
-                                }
-                            }
-                        }
-                        renderItemList(items, false);
-                    }
-                }
-            }
-            if (receivedData.menu) {
-                if (receivedData.config && receivedData.config.maxVisibleItems) {
-                    const maxItems = receivedData.config.maxVisibleItems;
-                    const itemHeightInRem = 1.8;
-                    const listPaddingInRem = 0.5;
-                    const maxHeight = (maxItems * itemHeightInRem) + listPaddingInRem;
-                    configuredMaxHeight = maxHeight + 'rem';
-                }
-                fullMenuData = normalizeData(receivedData.menu);
-                renderTopLevelMenu();
-            }
-            if (receivedData.notification) {
-                const { title, desc, time, type } = receivedData.notification;
-                showNotification(title, desc, time, type);
-            }
-            if (receivedData.uiAction) {
-                if (receivedData.element === 'watermark') {
-                    const watermarkEl = document.getElementById('watermark');
-                    if (watermarkEl) {
-                        watermarkEl.style.display = receivedData.value ? 'flex' : 'none';
-                    }
-                } else {
-                    const frameId = `${receivedData.element}-frame`;
-                    const frame = document.getElementById(frameId);
-                    if (frame) {
-                        switch (receivedData.uiAction) {
-                            case 'toggle':
-                                frame.style.display = receivedData.value ? 'block' : 'none';
-                                break;
-                            case 'positionX':
-                                uiOffsets[receivedData.element].x = receivedData.value;
-                                applyTransform(receivedData.element, frame);
-                                break;
-                            case 'positionY':
-                                uiOffsets[receivedData.element].y = receivedData.value;
-                                applyTransform(receivedData.element, frame);
-                                break;
-                        }
-                    }
+                    
+                    renderMenu();
                 }
             }
         });
 
-        window.updateVehicleItems = updateVehicleItems;
-        
-        function showNotification(title, desc, time, type = 'info') {
-            const container = document.getElementById('notification-container');
-            const notification = document.createElement('div');
-            notification.className = `notification`;
-            notification.innerHTML = `
-                <div class="notification-header">
-                    <img src="Img/Logo.png" class="notification-logo" alt="Logo">
-                    <span class="notification-title">${title}</span>
-                </div>
-                <div class="notification-body">
-                    <span class="notification-desc">${desc}</span>
-                </div>
-                <div class="notification-timer"></div>
-            `;
-            container.appendChild(notification);
-            applyChromaToYnxni(notification);
-            const timerBar = notification.querySelector('.notification-timer');
-            if (timerBar) {
-                timerBar.style.animationDuration = `${time / 1000}s`;
-            }
-            setTimeout(() => {
-                notification.classList.add('leaving');
-                setTimeout(() => {
-                    if (container.contains(notification)) {
-                        container.removeChild(notification);
-                    }
-                }, 500);
-            }, time);
-        }
-
-        function updateSpecificItem(catIdx, subIdx, itemIdx, itemData) {
-            if (fullMenuData[catIdx] && fullMenuData[catIdx].content[subIdx] && fullMenuData[catIdx].content[subIdx].items[itemIdx]) {
-                fullMenuData[catIdx].content[subIdx].items[itemIdx] = itemData;
-                if (!isTopLevel && categorySelectionIndex === catIdx && subCategoryIndex === subIdx) {
-                    renderItemList(fullMenuData[catIdx].content[subIdx].items, false);
-                }
-            }
-        }
-        
-        function updateColorPickerUI(r, g, b) {
-            document.getElementById('color-picker-preview').style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-            document.querySelector('#color-picker-r .color-channel-value').textContent = r;
-            document.querySelector('#color-picker-r .color-channel-fill').style.width = `${(r / 255) * 100}%`;
-            document.querySelector('#color-picker-g .color-channel-value').textContent = g;
-            document.querySelector('#color-picker-g .color-channel-fill').style.width = `${(g / 255) * 100}%`;
-            document.querySelector('#color-picker-b .color-channel-value').textContent = b;
-            document.querySelector('#color-picker-b .color-channel-fill').style.width = `${(b / 255) * 100}%`;
-        }
-        
-        function updateColorPickerSelection(selection) {
-            document.querySelectorAll('.color-channel-wrapper').forEach(el => el.classList.remove('selected'));
-            if (selection === 1) document.getElementById('color-picker-r').classList.add('selected');
-            if (selection === 2) document.getElementById('color-picker-g').classList.add('selected');
-            if (selection === 3) document.getElementById('color-picker-b').classList.add('selected');
-        }
-
-        function updateFeatureDescription() {
-            const menu = document.getElementById('mod-menu');
-            const descFrame = document.getElementById('feature-desc-frame');
+        function renderMenu() {
+            const container = document.getElementById('menu-content');
+            let html = '';
             
-            if (menu.classList.contains('closed')) {
-                descFrame.classList.remove('show');
-                setTimeout(() => { descFrame.style.display = 'none'; }, 300);
-                return;
-            }
-
-            const descText = document.getElementById('feature-desc-text');
-            let currentItem;
-            if (isTopLevel) {
-                currentItem = fullMenuData[categorySelectionIndex];
-            } else {
-                currentItem = fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.items[itemSelectionIndex];
-            }
-            if (currentItem && currentItem.DESC) {
-                descText.textContent = currentItem.DESC;
-                descFrame.style.display = 'block';
-                setTimeout(() => descFrame.classList.add('show'), 10);
-            } else {
-                descFrame.classList.remove('show');
-                setTimeout(() => { descFrame.style.display = 'none'; }, 300);
-            }
-        }
-
-        function renderTopLevelMenu() {
-            isTopLevel = true;
-            document.getElementById('sub-header').style.display = 'none';
-            itemSelectionIndex = 0;
-            renderItemList(fullMenuData);
-            updatePlayerInfoVisibility();
-        }
-
-        function renderSubCategoryView() {
-            isTopLevel = false;
-            document.getElementById('sub-header').style.display = 'flex';
-            renderSubHeader();
-            const items = fullMenuData[categorySelectionIndex].content[subCategoryIndex].items;
-            itemSelectionIndex = 0;
-            let guard = 0;
-            while(items.length > 0 && items[itemSelectionIndex] && items[itemSelectionIndex].TYPE === "Spacer" && guard < items.length) {
-                itemSelectionIndex++;
-                guard++;
-            }
-            renderItemList(items, true);
-            updatePlayerInfoVisibility();
-        }
-
-        function updateSubHeaderSelection(useTransition = true) {
-            const subHeader = document.getElementById('sub-header');
-            if (!subHeader || subHeader.style.display === 'none') return;
-            const selectionBar = subHeader.querySelector('.selection-bar');
-            const itemSpans = Array.from(subHeader.querySelectorAll('.sub-category-tab'));
-            if (!selectionBar || itemSpans.length === 0) return;
-            itemSpans.forEach(s => s.querySelector('span:not(.soon-badge)').classList.remove('active-sub'));
-            const activeSpan = itemSpans[subCategoryIndex];
-            if (activeSpan) {
-                activeSpan.querySelector('span:not(.soon-badge)').classList.add('active-sub');
-                const barWidth = subHeader.offsetWidth / itemSpans.length;
-                const barOffset = subCategoryIndex * barWidth;
-                selectionBar.style.width = `${barWidth}px`;
-                selectionBar.style.transform = `translateX(${barOffset}px)`;
-            }
-        }
-        
-        function resetItemSelection() {
-            const items = fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.items || [];
-            itemSelectionIndex = 0;
-            let guard = 0;
-            while(items.length > 0 && items[itemSelectionIndex] && items[itemSelectionIndex].TYPE === "Spacer" && guard < items.length) {
-                itemSelectionIndex++;
-                guard++;
-            }
-            updateSelection();
-        }
-
-        function renderSubHeader() {
-            const subHeader = document.getElementById('sub-header');
-            const category = fullMenuData[categorySelectionIndex];
-            const subCategories = category.content;
-            let html = '<div class="selection-bar"></div>';
-
-            subCategories.forEach((sub, index) => {
-                let tabClass = 'sub-category-tab';
-                let badge = '';
-                const isConfigs = category.name === 'Settings' && sub.name === 'Configs';
-                const isSpawner = category.name === 'Vehicle' && sub.name === 'Spawner';
-
-                if (isConfigs || isSpawner) {
-                    tabClass += ' coming-soon';
-                    badge = '<span class="soon-badge">SOON</span>';
+            menuData.forEach((item, index) => {
+                if (item.type === 'category') {
+                    html += `<div class="category">${item.name}</div>`;
+                } 
+                else if (item.type === 'toggle') {
+                    const activeClass = index === currentSelection ? 'active' : '';
+                    const toggleClass = item.value ? 'toggle on' : 'toggle';
+                    html += `
+                        <div class="menu-item ${activeClass}" data-index="${index}">
+                            <span>${item.name}</span>
+                            <div class="${toggleClass}" onclick="toggleItem(${index})">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    `;
                 }
-                html += `<div class="${tabClass}"><span>${sub.name}</span>${badge}</div>`;
             });
-            subHeader.innerHTML = html;
-            setTimeout(() => updateSubHeaderSelection(false), 50);
-        }
-
-        function renderItemHTML(item) {
-            let indicatorHTML = `<span class="indicator"><span class="material-icons-outlined">chevron_right</span></span>`;
-            if (item.TYPE) {
-                switch (item.TYPE) {
-                    case "Spacer": return `<span>${item.TITLE}</span>`;
-                    case "Button": indicatorHTML = `<span class="indicator"><span class="material-icons-outlined">east</span></span>`; break;
-                    case "Toggle": const toggledClass = item.value ? 'toggled' : ''; indicatorHTML = `<div class="toggle-switch ${toggledClass}"><div class="thumb"></div></div>`; break;
-                    case "Slider": 
-                        const percent = ((item.value - item.min) / (item.max - item.min)) * 100;
-                        indicatorHTML = `<div class="slider-container"><div class="slider-bar"><div class="slider-fill" data-width="${percent}%"></div></div><span class="slider-value">${item.value.toFixed(1)}</span></div>`; 
-                        break;
-                    case "ComboSelection": indicatorHTML = `<div class="combo-container">&lt;<span>${item.options[item.selectedIndex - 1]}</span>&gt;</div>`; break;
-                    case "ColorPicker": const color = item.value; indicatorHTML = `<div class="color-picker-indicator"><div class="color-preview" style="background-color: rgb(${color.r}, ${color.g}, ${color.b})"></div></div>`; break;
-                    case "ToggleComboSelection": const comboToggled = item.value ? 'toggled' : ''; indicatorHTML = `<div class="multi-indicator"><div class="combo-container"><span>${item.options[item.selectedIndex - 1]}</span></div><div class="toggle-switch ${comboToggled}"><div class="thumb"></div></div></div>`; break;
-                    case "ToggleSlider": const sliderToggled = item.value ? 'toggled' : ''; const sliderPercent = ((item.sliderValue - item.min) / (item.max - item.min)) * 100; indicatorHTML = `<div class="multi-indicator"><div class="slider-container"><div class="slider-bar"><div class="slider-fill" data-width="${sliderPercent}%"></div></div><span class="slider-value">${item.sliderValue.toFixed(1)}</span></div><div class="toggle-switch ${sliderToggled}"><div class="thumb"></div></div></div>`; break;
-                }
-            }
-            const tagsHTML = generateFlagTags(item.flags);
-            return `<span>${item.TITLE || item.name}${tagsHTML}</span>${indicatorHTML}`;
-        }
-        
-        function renderItemList(items, animate = true) {
-            const menuContent = document.getElementById("menu-content");
-            const menuList = menuContent.querySelector("ul");
             
-            const oldScrollTop = menuContent.scrollTop;
-
-            let html = "";
-            if (items && items.length > 0) {
-                items.forEach((item, index) => {
-                    let classes = [];
-                    if (index === itemSelectionIndex && item.TYPE !== 'Spacer') {
-                        classes.push('active');
-                    }
-                    if (item.TYPE === 'Spacer') {
-                        classes.push('spacer');
-                    }
-                    const classAttr = classes.length > 0 ? `class="${classes.join(' ')}"` : '';
-                    html += `<li ${classAttr}>${renderItemHTML(item)}</li>`;
-                });
-            } else {
-                html = `<li style="justify-content: center;"><span>- Empty -</span></li>`;
-            }
-            menuList.innerHTML = html;
-
-            if (animate) {
-                const listItems = menuList.querySelectorAll("li");
-                listItems.forEach((item, index) => {
-                    item.classList.add('animate-in');
-                    item.style.animationDelay = `${index * 0.025}s`;
-                });
-            }
-            
-            menuContent.scrollTop = oldScrollTop;
-
-            const scrollHeight = menuList.scrollHeight;
-            const currentMaxHeight = parseFloat(configuredMaxHeight) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-            if (scrollHeight < currentMaxHeight) {
-                menuContent.style.maxHeight = scrollHeight + 'px';
-            } else {
-                menuContent.style.maxHeight = configuredMaxHeight;
-            }
-
-            setTimeout(() => {
-                const sliders = menuList.querySelectorAll('.slider-fill');
-                sliders.forEach(slider => {
-                    slider.style.width = slider.getAttribute('data-width');
-                });
-            }, 50);
-
-            updateSelection();
-            applyChromaToYnxni(menuList);
-        }
-
-        function updateCurrentItem(itemData) {
-            fullMenuData[categorySelectionIndex].content[subCategoryIndex].items[itemSelectionIndex] = itemData;
-            const activeItem = document.querySelector("#menu-content ul li.active");
-            if (activeItem) {
-                activeItem.innerHTML = renderItemHTML(itemData);
-                 setTimeout(() => {
-                    const sliders = activeItem.querySelectorAll('.slider-fill');
-                    sliders.forEach(slider => {
-                        slider.style.width = slider.getAttribute('data-width');
-                    });
-                }, 10);
-                applyChromaToYnxni(activeItem);
-            }
-        }
-        
-        function updatePlayerItems(newItems, selectedServerId) {
-            if (!isTopLevel && fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.name === 'Players') {
-                fullMenuData[categorySelectionIndex].content[subCategoryIndex].items = newItems;
-                let newIndex = itemSelectionIndex;
-                const foundIndex = newItems.findIndex(item => item.serverId === selectedServerId);
-                if (foundIndex !== -1) {
-                    newIndex = foundIndex;
-                } else if (newIndex >= newItems.length) {
-                    newIndex = newItems.length > 3 ? 3 : 0;
-                }
-                itemSelectionIndex = newIndex;
-                renderItemList(newItems, false);
-            }
+            container.innerHTML = html;
         }
 
         function updateSelection() {
-            const items = document.querySelectorAll("#menu-content ul li");
-            const currentIndex = isTopLevel ? categorySelectionIndex : itemSelectionIndex;
+            const items = document.querySelectorAll('.menu-item');
             items.forEach((item, index) => {
-                const list = isTopLevel ? fullMenuData : fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.items;
-                const isSpacer = list && list[index] && list[index].TYPE === 'Spacer';
-                const isActive = index === currentIndex && !isSpacer;
-                item.classList.remove('active');
-                if (isActive) {
-                    if (item.classList.contains('animate-in')) {
-                        setTimeout(() => item.classList.add('active'), 50);
-                    } else {
-                        item.classList.add('active');
-                    }
-                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                if (index === currentSelection) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
                 }
             });
-            updateFeatureDescription();
-        }
-        
-        function navigate(direction) {
-            const list = isTopLevel ? fullMenuData : fullMenuData[categorySelectionIndex]?.content[subCategoryIndex]?.items;
-            if (!list || list.length === 0) return;
-            let currentIndex = isTopLevel ? categorySelectionIndex : itemSelectionIndex;
-            let newIndex = currentIndex;
-            const d = direction === 'down' ? 1 : -1;
-            let guard = 0;
-            do {
-                newIndex = (newIndex + d + list.length) % list.length;
-                guard++;
-            } while (list[newIndex].TYPE === 'Spacer' && guard < list.length * 2);
-            if (guard >= list.length * 2) return;
-            if (isTopLevel) {
-                categorySelectionIndex = newIndex;
-            } else {
-                itemSelectionIndex = newIndex;
-            }
-            updateSelection();
         }
 
-        function selectItem() {
-            if (isTopLevel) {
-                subCategoryIndex = 0;
-                renderSubCategoryView();
+        function toggleItem(index) {
+            currentSelection = index;
+            const item = menuData[index];
+            if (item && item.type === 'toggle') {
+                item.value = !item.value;
+                
+                fetch(`https://${GetParentResourceName()}/menuToggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        toggleName: item.toggleName,
+                        state: item.value
+                    })
+                });
+                
+                renderMenu();
+                updateSelection();
             }
         }
 
-        function navigateBack() {
-            if (!isTopLevel) { 
-                renderTopLevelMenu(); 
+        // Listen for key events from LUA
+        window.addEventListener('keydown', function(event) {
+            if (!menuVisible) return;
+            
+            if (event.key === 'ArrowUp') {
+                currentSelection = Math.max(0, currentSelection - 1);
+                updateSelection();
+                event.preventDefault();
             }
-        }
-
-        function changeValue(direction) {
-            if (isTopLevel) return;
-            const subCategoryCount = fullMenuData[categorySelectionIndex].content.length;
-            if (subCategoryCount === 0) return;
-            if (direction === 'right') { subCategoryIndex = (subCategoryIndex + 1) % subCategoryCount; }
-            else if (direction === 'left') { subCategoryIndex = (subCategoryIndex - 1 + subCategoryCount) % subCategoryCount; }
-            updateSubHeaderSelection(true);
-            const items = fullMenuData[categorySelectionIndex].content[subCategoryIndex].items;
-            itemSelectionIndex = 0;
-            let guard = 0;
-            while(items.length > 0 && items[itemSelectionIndex] && items[itemSelectionIndex].TYPE === "Spacer" && guard < items.length) {
-                itemSelectionIndex++;
-                guard++;
+            else if (event.key === 'ArrowDown') {
+                currentSelection = Math.min(menuData.length - 1, currentSelection + 1);
+                updateSelection();
+                event.preventDefault();
             }
-            renderItemList(items, true);
-            updatePlayerInfoVisibility();
-        }
-
-        const tips = [
-            "Did you know you can press F9 to bind a feature?",
-            "You can change the banner inside of settings!",
-            "You can Edit Configs/Scripts on your dashboard.",
-            "You can use the /Upload command in our discord to upload custom scripts.",
-            "If a feature you have used got you banned, Report it in our discord and it will be fixed!",
-            "You can suggest any feature you have in mind on our discord!",
-            "Exploits are auto detected and populated inside Exploits Tab."
-        ];
-        let currentTipIndex = -1;
-        const tipElement = document.getElementById('loading-tip');
-
-        function cycleTips() {
-            tipElement.style.opacity = '0';
-            setTimeout(() => {
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * tips.length);
-                } while (newIndex === currentTipIndex && tips.length > 1);
-                currentTipIndex = newIndex;
-                tipElement.textContent = tips[currentTipIndex];
-                tipElement.style.opacity = '1';
-            }, 500);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            cycleTips();
-            setInterval(cycleTips, 5000);
-            applyChromaToYnxni(document.body); // Initial scan of the whole page
+            else if (event.key === 'Enter') {
+                const item = menuData[currentSelection];
+                if (item && item.type === 'toggle') {
+                    item.value = !item.value;
+                    
+                    fetch(`https://${GetParentResourceName()}/menuToggle`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            toggleName: item.toggleName,
+                            state: item.value
+                        })
+                    });
+                    
+                    renderMenu();
+                }
+                event.preventDefault();
+            }
         });
     </script>
 </body>
